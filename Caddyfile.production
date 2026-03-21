@@ -1,0 +1,126 @@
+# Chrona - Production Caddyfile
+# 
+# Replace YOUR_DOMAIN.COM with your actual domain
+# Caddy will automatically provision HTTPS certificates
+#
+# Usage:
+#   1. Replace YOUR_DOMAIN.COM with your domain
+#   2. Update CORS_ORIGINS environment variable to include your domain
+#   3. Deploy with: docker compose --profile production up -d
+
+# ===========================================
+# Main Application Domain
+# ===========================================
+YOUR_DOMAIN.COM {
+    # Automatic HTTPS
+    encode gzip zstd
+    
+    # Security Headers
+    header {
+        # Strict Transport Security
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        
+        # XSS Protection
+        X-X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        
+        # Referrer Policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # Content Security Policy (adjust as needed)
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss: https:; frame-ancestors 'self';"
+        
+        # Permissions Policy
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        
+        # Remove server identification
+        -Server
+    }
+    
+    # Handle WebSocket connections for chat service
+    @websockets {
+        header Connection *Upgrade*
+        header Upgrade websocket
+    }
+    
+    @chat_port_query {
+        query XTransformPort=3003
+    }
+    
+    # Route chat service WebSocket connections
+    handle @chat_port_query {
+        reverse_proxy chat:3003 {
+            header_up Host {host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Real-IP {remote_host}
+            header_up Upgrade {http.request.header.Upgrade}
+            header_up Connection {http.request.header.Connection}
+        }
+    }
+    
+    # Handle other port-transformed requests
+    @transform_port_query {
+        query XTransformPort=*
+    }
+    
+    handle @transform_port_query {
+        reverse_proxy localhost:{query.XTransformPort} {
+            header_up Host {host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    
+    # Main application routes
+    handle {
+        reverse_proxy app:3000 {
+            header_up Host {host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    
+    # Logging
+    log {
+        output stdout
+        format console
+    }
+}
+
+# ===========================================
+# WWW Redirect (optional)
+# ===========================================
+www.YOUR_DOMAIN.COM {
+    redir https://YOUR_DOMAIN.COM{uri} permanent
+}
+
+# ===========================================
+# API Subdomain (optional - for API-only access)
+# ===========================================
+# api.YOUR_DOMAIN.COM {
+#     encode gzip zstd
+#     
+#     header {
+#         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+#         X-Frame-Options "DENY"
+#         X-X-Content-Type-Options "nosniff"
+#         Access-Control-Allow-Origin "https://YOUR_DOMAIN.COM"
+#         Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+#         Access-Control-Allow-Headers "Content-Type, Authorization"
+#     }
+#     
+#     handle {
+#         reverse_proxy app:3000 {
+#             header_up Host {host}
+#             header_up X-Forwarded-For {remote_host}
+#             header_up X-Forwarded-Proto {scheme}
+#             header_up X-Real-IP {remote_host}
+#         }
+#     }
+# }

@@ -1,0 +1,565 @@
+// Production PostgreSQL Schema for Chrona
+// To use: Set DATABASE_URL to your PostgreSQL connection string
+// Example: postgresql://user:password@localhost:5432/chrona?schema=public
+// Then run: prisma db push --schema=prisma/schema.postgres.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(cuid())
+  email            String?           @unique
+  username         String            @unique
+  password         String
+  securityKey      String            @map("security_key")
+  avatarUrl        String?           @map("avatar_url")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  
+  // Role System
+  role             String            @default("user") // user, mod, admin, owner
+  
+  // Chronos Currency System
+  chronos            Int       @default(0)
+  purchasedSlots     Int       @default(0) @map("purchased_slots")
+  nameColor          String?   @map("name_color")
+  dailyImagesUsed    Int       @default(0) @map("daily_images_used")
+  dailyImagesResetAt DateTime? @map("daily_images_reset_at")
+  hasFirstPurchaseBonus Boolean @default(false) @map("has_first_purchase_bonus")
+  
+  // Relations
+  blockedBy        Block[]           @relation("UserBlockedBy")
+  blockedUsers     Block[]           @relation("UserBlocked")
+  following        Follow[]          @relation("UserFollowing")
+  followers        Follow[]          @relation("UserFollowers")
+  receivedRequests FriendRequest[]   @relation("ReceivedRequests")
+  sentRequests     FriendRequest[]   @relation("SentRequests")
+  friendsOf        Friendship[]      @relation("FriendOf")
+  friends          Friendship[]      @relation("UserFriends")
+  personas         Persona[]
+  ownedStorylines  Storyline[]       @relation("StorylineOwner")
+  storylineMembers StorylineMember[]
+  chronosTransactions ChronosTransaction[]
+  ownedThemes      ProfileTheme[]    @relation("ThemeOwner")
+  notifications    Notification[]
+
+  @@map("users")
+}
+
+model Persona {
+  id                     String              @id @default(cuid())
+  userId                 String              @map("user_id")
+  name                   String
+  avatarUrl              String?             @map("avatar_url")
+  isActive               Boolean             @default(false) @map("is_active")
+  isOnline               Boolean             @default(false) @map("is_online")
+  description            String?
+  archetype              String?
+  gender                 String?
+  pronouns               String?
+  age                    Int?
+  tags                   String?             @db.Text
+  personalityDescription String?             @map("personality_description") @db.Text
+  personalitySpectrums   String?             @map("personality_spectrums") @db.Text
+  strengths              String?             @db.Text
+  flaws                  String?             @db.Text
+  values                 String?             @db.Text
+  fears                  String?             @db.Text
+  species                String?
+  likes                  String?             @db.Text
+  dislikes               String?             @db.Text
+  hobbies                String?             @db.Text
+  skills                 String?             @db.Text
+  languages              String?             @db.Text
+  habits                 String?             @db.Text
+  speechPatterns         String?             @map("speech_patterns") @db.Text
+  backstory              String?             @db.Text
+  appearance             String?             @db.Text
+  mbtiType               String?             @map("mbti_type")
+  
+  // Profile Theme
+  themeId                String?             @map("theme_id")
+  themeEnabled           Boolean             @default(false) @map("theme_enabled")
+  
+  // Roleplay Preferences
+  rpStyle                String?             @map("rp_style")
+  rpPreferredGenders     String?             @map("rp_preferred_genders") @db.Text
+  rpGenres               String?             @map("rp_genres") @db.Text
+  rpLimits               String?             @map("rp_limits") @db.Text
+  rpThemes               String?             @map("rp_themes") @db.Text
+  rpExperienceLevel      String?             @map("rp_experience_level")
+  rpResponseTime         String?             @map("rp_response_time")
+  
+  createdAt              DateTime            @default(now()) @map("created_at")
+  updatedAt              DateTime            @updatedAt @map("updated_at")
+  
+  conversationsAsB       Conversation[]      @relation("ConversationB")
+  conversationsAsA       Conversation[]      @relation("ConversationA")
+  sentMessages           Message[]           @relation("MessageSender")
+  storylineMessages      StorylineMessage[]
+  user                   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connections            PersonaConnection[]
+  theme                  ProfileTheme?       @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  storylineBoosts        StorylineBoost[]
+  sentDmRequests         DmRequest[]         @relation("DmRequestSender")
+  receivedDmRequests     DmRequest[]         @relation("DmRequestReceiver")
+
+  @@index([userId])
+  @@map("personas")
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  personaAId    String    @map("persona_a_id")
+  personaBId    String    @map("persona_b_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  lastMessageAt DateTime  @default(now()) @map("last_message_at")
+  
+  personaB      Persona   @relation("ConversationB", fields: [personaBId], references: [id], onDelete: Cascade)
+  personaA      Persona   @relation("ConversationA", fields: [personaAId], references: [id], onDelete: Cascade)
+  messages      Message[]
+
+  @@unique([personaAId, personaBId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String       @map("conversation_id")
+  senderId       String       @map("sender_id")
+  content        String       @default("") @db.Text
+  imageUrl       String?      @map("image_url")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  
+  sender         Persona      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+model FriendRequest {
+  id         String   @id @default(cuid())
+  senderId   String   @map("sender_id")
+  receiverId String   @map("receiver_id")
+  status     String   @default("pending")
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  receiver   User     @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@map("friend_requests")
+}
+
+model Friendship {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  friendId    String   @map("friend_id")
+  isFavourite Boolean  @default(false) @map("is_favourite")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  friend      User     @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+  user        User     @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@map("friendships")
+}
+
+model DmRequest {
+  id              String    @id @default(cuid())
+  senderId        String    @map("sender_id")
+  receiverId      String    @map("receiver_id")
+  firstMessage    String    @map("first_message") @db.Text
+  imageUrl        String?   @map("image_url")
+  status          String    @default("pending")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  sender          Persona   @relation("DmRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver        Persona   @relation("DmRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId])
+  @@index([status])
+  @@map("dm_requests")
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  blocked   User     @relation("UserBlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocker   User     @relation("UserBlocked", fields: [blockerId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@map("blocks")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+// Storyline System
+model Storyline {
+  id             String              @id @default(cuid())
+  ownerId        String              @map("owner_id")
+  name           String
+  description    String?
+  lore           String?             @db.Text
+  iconUrl        String?             @map("icon_url")
+  bannerUrl      String?             @map("banner_url")
+  category       String
+  
+  // Customization
+  accentColor    String?             @default("#8b5cf6") @map("accent_color")
+  welcomeMessage String?             @map("welcome_message") @db.Text
+  memberCap      Int?                @map("member_cap")
+  requireApproval Boolean            @default(false) @map("require_approval")
+  
+  // Boost System
+  boostChronos   Int                 @default(0) @map("boost_chronos")
+  boostTier      Int                 @default(0) @map("boost_tier")
+  
+  isPublic       Boolean             @default(true) @map("is_public")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  
+  owner          User                @relation("StorylineOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  categories     StorylineCategory[]
+  channels       StorylineChannel[]
+  members        StorylineMember[]
+  roles          StorylineRole[]
+  invites        StorylineInvite[]
+  bans           StorylineBan[]
+  pinnedMessages StorylinePinnedMessage[]
+  boosts         StorylineBoost[]
+
+  @@index([category])
+  @@map("storylines")
+}
+
+model StorylineCategory {
+  id          String            @id @default(cuid())
+  storylineId String            @map("storyline_id")
+  name        String
+  position    Int               @default(0)
+  collapsed   Boolean           @default(false)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  
+  storyline   Storyline         @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  channels    StorylineChannel[]
+
+  @@unique([storylineId, name])
+  @@index([storylineId])
+  @@map("storyline_categories")
+}
+
+model StorylineChannel {
+  id          String             @id @default(cuid())
+  storylineId String             @map("storyline_id")
+  categoryId  String?            @map("category_id")
+  name        String
+  type        String             @default("text")
+  position    Int                @default(0)
+  
+  // Channel Settings
+  slowMode    Int?               @default(0) @map("slow_mode")
+  topic       String?
+  locked      Boolean            @default(false)
+  
+  createdAt   DateTime           @default(now()) @map("created_at")
+  
+  storyline   Storyline          @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  category    StorylineCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  messages    StorylineMessage[]
+  permissions StorylineChannelPermission[]
+
+  @@unique([storylineId, name])
+  @@index([storylineId])
+  @@map("storyline_channels")
+}
+
+model StorylineChannelPermission {
+  id        String           @id @default(cuid())
+  channelId String           @map("channel_id")
+  roleId    String           @map("role_id")
+  canView   Boolean          @default(true) @map("can_view")
+  canSend   Boolean          @default(true) @map("can_send")
+  
+  channel   StorylineChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  role      StorylineRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, roleId])
+  @@map("storyline_channel_permissions")
+}
+
+model StorylineMember {
+  id          String    @id @default(cuid())
+  storylineId String    @map("storyline_id")
+  userId      String    @map("user_id")
+  roleId      String?   @map("role_id")
+  role        String    @default("member")
+  joinedAt    DateTime  @default(now()) @map("joined_at")
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyline   Storyline @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  customRole  StorylineRole? @relation(fields: [roleId], references: [id], onDelete: SetNull)
+
+  @@unique([storylineId, userId])
+  @@index([storylineId])
+  @@map("storyline_members")
+}
+
+model StorylineRole {
+  id                String                      @id @default(cuid())
+  storylineId       String                      @map("storyline_id")
+  name              String
+  color             String                      @default("#8b5cf6")
+  position          Int                         @default(0)
+  
+  // Permissions
+  canManageChannels Boolean                     @default(false) @map("can_manage_channels")
+  canManageRoles    Boolean                     @default(false) @map("can_manage_roles")
+  canKickMembers    Boolean                     @default(false) @map("can_kick_members")
+  canBanMembers     Boolean                     @default(false) @map("can_ban_members")
+  canManageMessages Boolean                     @default(false) @map("can_manage_messages")
+  canInvite         Boolean                     @default(true) @map("can_invite")
+  canChangeSettings Boolean                     @default(false) @map("can_change_settings")
+  isAdmin           Boolean                     @default(false) @map("is_admin")
+  
+  createdAt         DateTime                    @default(now()) @map("created_at")
+  updatedAt         DateTime                    @updatedAt @map("updated_at")
+  
+  storyline         Storyline                   @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  members           StorylineMember[]
+  channelPermissions StorylineChannelPermission[]
+
+  @@unique([storylineId, name])
+  @@index([storylineId])
+  @@map("storyline_roles")
+}
+
+model StorylineInvite {
+  id          String    @id @default(cuid())
+  storylineId String    @map("storyline_id")
+  code        String    @unique
+  createdById String    @map("created_by_id")
+  maxUses     Int?      @map("max_uses")
+  uses        Int       @default(0)
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  storyline   Storyline @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+
+  @@index([storylineId])
+  @@index([code])
+  @@map("storyline_invites")
+}
+
+model StorylineBan {
+  id          String    @id @default(cuid())
+  storylineId String    @map("storyline_id")
+  userId      String    @map("user_id")
+  bannedById  String    @map("banned_by_id")
+  reason      String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  storyline   Storyline @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+
+  @@unique([storylineId, userId])
+  @@index([storylineId])
+  @@map("storyline_bans")
+}
+
+model StorylineMessage {
+  id        String           @id @default(cuid())
+  channelId String           @map("channel_id")
+  senderId  String           @map("sender_id")
+  content   String           @default("") @db.Text
+  imageUrl  String?          @map("image_url")
+  createdAt DateTime         @default(now()) @map("created_at")
+  
+  channel   StorylineChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  sender    Persona          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  pinnedBy  StorylinePinnedMessage[]
+
+  @@index([channelId])
+  @@index([senderId])
+  @@map("storyline_messages")
+}
+
+model StorylinePinnedMessage {
+  id          String           @id @default(cuid())
+  storylineId String           @map("storyline_id")
+  messageId   String           @map("message_id")
+  pinnedById  String           @map("pinned_by_id")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  
+  storyline   Storyline        @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  message     StorylineMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([storylineId, messageId])
+  @@index([storylineId])
+  @@map("storyline_pinned_messages")
+}
+
+model StorylineBoost {
+  id          String    @id @default(cuid())
+  storylineId String    @map("storyline_id")
+  personaId   String    @map("persona_id")
+  amount      Int
+  expiresAt   DateTime  @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  storyline   Storyline @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  persona     Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@index([storylineId])
+  @@index([personaId])
+  @@index([expiresAt])
+  @@map("storyline_boosts")
+}
+
+model PersonaConnection {
+  id               String   @id @default(cuid())
+  personaId        String   @map("persona_id")
+  characterName    String   @map("character_name")
+  relationshipType String   @map("relationship_type")
+  specificRole     String?  @map("specific_role")
+  characterAge     Int?     @map("character_age")
+  description      String?  @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  
+  persona          Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@index([personaId])
+  @@map("persona_connections")
+}
+
+// Chronos Currency System
+model ProfileTheme {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  previewUrl  String?    @map("preview_url")
+  background  String?
+  borderColor String?    @map("border_color")
+  textColor   String?    @map("text_color")
+  accentColor String?    @map("accent_color")
+  backgroundImage String? @map("background_image")
+  
+  price       Int        @default(100)
+  isSystem    Boolean    @default(true) @map("is_system")
+  isActive    Boolean    @default(true) @map("is_active")
+  
+  createdAt   DateTime   @default(now()) @map("created_at")
+  
+  ownerId     String?    @map("owner_id")
+  owner       User?      @relation("ThemeOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  personas    Persona[]
+
+  @@index([isActive])
+  @@map("profile_themes")
+}
+
+model ChronosTransaction {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  amount      Int
+  balance     Int
+  type        String
+  category    String
+  description String   @db.Text
+  referenceId String?  @map("reference_id")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("chronos_transactions")
+}
+
+// Admin System
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String   @map("reporter_id")
+  reportedId  String?  @map("reported_id")
+  type        String
+  reason      String
+  details     String?  @db.Text
+  status      String   @default("pending")
+  
+  referenceId String?  @map("reference_id")
+  
+  reviewedById String? @map("reviewed_by_id")
+  reviewedAt  DateTime? @map("reviewed_at")
+  reviewNote  String?  @map("review_note") @db.Text
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("reports")
+}
+
+model AdminLog {
+  id          String   @id @default(cuid())
+  adminId     String   @map("admin_id")
+  action      String
+  targetType  String   @map("target_type")
+  targetId    String?  @map("target_id")
+  details     String?  @db.Text
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("admin_logs")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  type        String
+  title       String
+  message     String   @db.Text
+  data        String?  @db.Text
+  
+  isRead      Boolean  @default(false) @map("is_read")
+  isDismissed Boolean  @default(false) @map("is_dismissed")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}

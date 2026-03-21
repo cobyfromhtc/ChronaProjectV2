@@ -1,0 +1,150 @@
+# Chrona - Docker Compose Production Configuration
+# 
+# Usage:
+#   Development: docker compose up -d
+#   Production:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Required environment variables (set in .env):
+#   - JWT_SECRET: Secret key for JWT signing
+#   - DATABASE_URL: PostgreSQL connection string
+#   - CORS_ORIGINS: Allowed CORS origins
+#   - STORAGE_TYPE: "local" or "s3"
+#   - (If S3) S3_BUCKET, S3_ACCESS_KEY, S3_SECRET_KEY, S3_REGION
+
+services:
+  # ===========================================
+  # Main Next.js Application
+  # ===========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chrona-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - STORAGE_TYPE=${STORAGE_TYPE:-local}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - CHAT_CORS_ORIGINS=${CHAT_CORS_ORIGINS:-http://localhost:3000}
+      - S3_BUCKET=${S3_BUCKET:-}
+      - S3_REGION=${S3_REGION:-us-east-1}
+      - S3_ENDPOINT=${S3_ENDPOINT:-https://s3.amazonaws.com}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:-}
+      - S3_CDN_URL=${S3_CDN_URL:-}
+      - FIRST_SETUP_KEY=${FIRST_SETUP_KEY:-}
+      - CRON_SECRET=${CRON_SECRET:-}
+    volumes:
+      # Persist local uploads if using local storage
+      - uploads-data:/app/public/uploads
+      - avatars-data:/app/public/avatars
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chat:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - chrona-network
+
+  # ===========================================
+  # Chat WebSocket Service
+  # ===========================================
+  chat:
+    build:
+      context: .
+      dockerfile: Dockerfile.chat
+    container_name: chrona-chat
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - CHAT_CORS_ORIGINS=${CHAT_CORS_ORIGINS:-http://localhost:3000}
+    healthcheck:
+      test: ["CMD", "bun", "-e", "require('net').createConnection(3003).on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - chrona-network
+
+  # ===========================================
+  # PostgreSQL Database
+  # ===========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: chrona-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-chrona}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-chrona_secret}
+      - POSTGRES_DB=${POSTGRES_DB:-chrona}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chrona} -d ${POSTGRES_DB:-chrona}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - chrona-network
+
+  # ===========================================
+  # Caddy Reverse Proxy (Optional - for production)
+  # ===========================================
+  caddy:
+    image: caddy:2-alpine
+    container_name: chrona-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile.production:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+      - chat
+    networks:
+      - chrona-network
+    profiles:
+      - production
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  chrona-network:
+    driver: bridge
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  postgres-data:
+    driver: local
+  uploads-data:
+    driver: local
+  avatars-data:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local
