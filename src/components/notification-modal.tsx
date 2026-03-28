@@ -1,0 +1,276 @@
+'use client'
+
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/use-auth'
+import { apiFetch } from '@/lib/api-client'
+import { 
+  Bell, X, Coins, AlertTriangle, Check, ChevronRight,
+  Loader2, MessageCircle
+} from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { DM_REFRESH_EVENT } from '@/components/dm-sidebar'
+
+interface Notification {
+  id: string
+  type: string
+  title: string
+  message: string
+  data: string | null
+  createdAt: string
+}
+
+export function NotificationModal() {
+  const { user, isAuthenticated } = useAuth()
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [isDismissed, setIsDismissed] = useState(false)
+  const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null)
+  
+  // Track if component is mounted to prevent state updates after unmount
+  const isMountedRef = useRef(true)
+  const fetchInProgressRef = useRef(false)
+
+  // Fetch notifications
+  const fetchNotifications = useCallback(async (showLoading = true) => {
+    if (!isAuthenticated || !user) return
+    if (fetchInProgressRef.current) return // Prevent concurrent fetches
+    
+    fetchInProgressRef.current = true
+    if (showLoading) setIsLoading(true)
+    
+    try {
+      const response = await apiFetch('/api/notifications')
+      if (!isMountedRef.current) return
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (!isMountedRef.current) return
+        
+        if (data.notifications && data.notifications.length > 0) {
+          // Check if there are new notifications
+          const newNotifications = data.notifications.filter(
+            (n: Notification) => !lastFetchTime || new Date(n.createdAt) > lastFetchTime
+          )
+          
+          if (newNotifications.length > 0) {
+            setNotifications(data.notifications)
+            setCurrentIndex(0)
+            setIsOpen(true)
+            setIsDismissed(false)
+            
+            // If there's a blorp_message, refresh DM sidebar
+            const hasBlorpMessage = newNotifications.some((n: Notification) => n.type === 'blorp_message')
+            if (hasBlorpMessage) {
+              window.dispatchEvent(new CustomEvent(DM_REFRESH_EVENT))
+            }
+          }
+        }
+        setLastFetchTime(new Date())
+      }
+    } catch (error) {
+      // Silently handle fetch errors - this is likely a network hiccup
+      if (isMountedRef.current) {
+        console.warn('Notification fetch temporarily unavailable')
+      }
+    } finally {
+      fetchInProgressRef.current = false
+      if (isMountedRef.current && showLoading) {
+        setIsLoading(false)
+      }
+    }
+  }, [isAuthenticated, user, lastFetchTime])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  // Initial fetch when user logs in
+  useEffect(() => {
+    if (!isAuthenticated || !user) return
+    
+    // Small delay to ensure auth state is settled
+    const timer = setTimeout(() => {
+      if (isMountedRef.current) {
+        fetchNotifications(true)
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [isAuthenticated, user?.id])
+
+  // Periodic polling every 30 seconds
+  useEffect(() => {
+    if (!isAuthenticated || !user) return
+
+    const interval = setInterval(() => {
+      if (isMountedRef.current && !fetchInProgressRef.current) {
+        fetchNotifications(false)
+      }
+    }, 30000) // Poll every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [isAuthenticated, user, fetchNotifications])
+
+  const dismissNotification = async (notificationId: string) => {
+    try {
+      await apiFetch('/api/notifications/dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId })
+      })
+    } catch (error) {
+      console.warn('Could not dismiss notification')
+    }
+  }
+
+  const handleNext = async () => {
+    const currentNotification = notifications[currentIndex]
+    if (currentNotification) {
+      await dismissNotification(currentNotification.id)
+    }
+
+    if (currentIndex < notifications.length - 1) {
+      setCurrentIndex(currentIndex + 1)
+    } else {
+      setIsOpen(false)
+      setIsDismissed(true)
+    }
+  }
+
+  const handleDismissAll = async () => {
+    try {
+      await apiFetch('/api/notifications/dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dismissAll: true })
+      })
+    } catch (error) {
+      console.warn('Could not dismiss all notifications')
+    }
+    setIsOpen(false)
+    setIsDismissed(true)
+  }
+
+  // Don't render anything if not authenticated, loading, or already dismissed
+  if (!isAuthenticated || isLoading || isDismissed || !isOpen || notifications.length === 0) {
+    return null
+  }
+
+  const currentNotification = notifications[currentIndex]
+  if (!currentNotification) return null
+
+  // Get icon based on notification type
+  const getIcon = () => {
+    switch (currentNotification.type) {
+      case 'chronos_reset':
+        return <AlertTriangle className="w-6 h-6 text-red-400" />
+      case 'chronos_grant':
+        return <Coins className="w-6 h-6 text-emerald-400" />
+      case 'chronos_deduct':
+        return <Coins className="w-6 h-6 text-amber-400" />
+      case 'blorp_message':
+        return <MessageCircle className="w-6 h-6 text-fuchsia-400" />
+      default:
+        return <Bell className="w-6 h-6 text-purple-400" />
+    }
+  }
+
+  // Get background gradient based on type
+  const getBackground = () => {
+    switch (currentNotification.type) {
+      case 'chronos_reset':
+        return 'from-red-900/30 to-red-950/30 border-red-500/30'
+      case 'chronos_grant':
+        return 'from-emerald-900/30 to-emerald-950/30 border-emerald-500/30'
+      case 'chronos_deduct':
+        return 'from-amber-900/30 to-amber-950/30 border-amber-500/30'
+      case 'blorp_message':
+        return 'from-fuchsia-900/30 to-purple-950/30 border-fuchsia-500/30'
+      default:
+        return 'from-purple-900/30 to-purple-950/30 border-purple-500/30'
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className={`w-full max-w-md rounded-2xl bg-gradient-to-b ${getBackground()} border shadow-2xl overflow-hidden`}>
+        {/* Header */}
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-black/30 flex items-center justify-center">
+              {getIcon()}
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">{currentNotification.title}</h2>
+              <p className="text-xs text-white/50">
+                {formatDistanceToNow(new Date(currentNotification.createdAt))} ago
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleDismissAll}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-5">
+          <div className="bg-black/20 rounded-xl p-4">
+            <p className="text-white/90 whitespace-pre-line leading-relaxed">
+              {currentNotification.message}
+            </p>
+          </div>
+
+          {/* Navigation dots */}
+          {notifications.length > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-4">
+              {notifications.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentIndex ? 'bg-white' : 'bg-white/30'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-5 border-t border-white/10 flex gap-3">
+          {notifications.length > 1 && (
+            <Button
+              onClick={handleDismissAll}
+              variant="ghost"
+              className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
+            >
+              Dismiss All
+            </Button>
+          )}
+          <Button
+            onClick={handleNext}
+            className="flex-1 bg-white/20 hover:bg-white/30 text-white"
+          >
+            {currentIndex < notifications.length - 1 ? (
+              <>
+                Next <ChevronRight className="w-4 h-4 ml-1" />
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4 mr-2" /> Got it
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
