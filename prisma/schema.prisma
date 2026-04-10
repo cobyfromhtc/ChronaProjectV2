@@ -1,0 +1,1219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(cuid())
+  email            String?           @unique  // Optional - can use username only
+  username         String            @unique
+  password         String
+  securityKey      String            // Account security key for verification
+  avatarUrl        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  // ==================== ROLE SYSTEM ====================
+  // Member Roles (No admin panel access): member, notable_member, artist, verified_creator, contributor
+  // Moderation: intern_mod, mod, senior_mod, head_mod
+  // Administration: admin, head_staff, assistant_manager, manager
+  // Executive: executive_chairman, owner
+  role             String            @default("member")
+
+  // Official Bot Account (Blorp)
+  isOfficial       Boolean           @default(false)  // Shows "OFFICIAL" tag
+
+  // ==================== CUSTOM TAG SYSTEM ====================
+  // High-priority custom tag for special users (admin-assigned)
+  customTag        String?                              // JSON: { text: string, color: string, style: 'glossy' | 'radiant' | 'shadowy' }
+
+  // ==================== MODERATION STATUS ====================
+  isBanned          Boolean           @default(false)  // Account is banned
+  isSuspended       Boolean           @default(false)  // Account is suspended
+  isFrozen          Boolean           @default(false)  // Account is frozen (no actions)
+  isMuted           Boolean           @default(false)  // Account is muted (no chat)
+  suspendedUntil    DateTime?                          // Suspension end time
+  mutedUntil        DateTime?                          // Mute end time
+  warningCount      Int               @default(0)      // Number of active warnings
+  banReason         String?                            // Reason for ban
+  suspendReason     String?                            // Reason for suspension
+
+  // ==================== CHRONOS CURRENCY SYSTEM ====================
+  chronos            Int       @default(0)    // Current balance
+  purchasedSlots     Int       @default(0)    // Extra persona slots purchased (25 free + this)
+  nameColor          String?                  // Global name color (hex)
+  dailyImagesUsed    Int       @default(0)    // Images sent today
+  dailyImagesResetAt DateTime?                // When to reset daily image count
+  hasFirstPurchaseBonus Boolean @default(false) // Whether they've used their first purchase bonus
+
+  // ==================== AVAILABILITY STATUS ====================
+  availabilityStatus  String    @default("online")  // "online", "away", "busy", "hiatus"
+  statusMessage       String?                        // Custom status message (max 100 chars)
+  hiatusUntil         DateTime?                      // Auto-return date for hiatus
+  
+  // ==================== AGE VERIFICATION ====================
+  dateOfBirth         DateTime?                      // Date of birth for age verification
+  isAdult             Boolean   @default(false)      // Cached 18+ status
+
+  // ==================== OOC PROFILE ====================
+  oocDisplayName      String?                        // Real name/nickname (separate from username)
+  oocBio              String?                        // OOC about me
+  oocPronouns         String?                        // OOC pronouns (e.g., "he/him", "she/her")
+  oocTimezone         String?                        // User timezone (e.g., "America/New_York")
+  oocAge              Int?                           // Optional age display
+  oocLinks            String?                        // JSON array: [{ name: "Discord", url: "..." }]
+  oocShowProfile      Boolean   @default(true)       // Whether to show OOC profile
+  
+  // ==================== NOTIFICATION PREFERENCES ====================
+  notifyDMs           Boolean   @default(true)       // Notify on new DM requests
+  notifyMentions      Boolean   @default(true)       // Notify on @mentions
+  notifyFriendRequests Boolean  @default(true)       // Notify on friend requests
+  notifyStorylineMessages Boolean @default(true)     // Notify on storyline messages
+  notifyMarketplace   Boolean   @default(true)       // Notify on marketplace activity
+  
+  // Relations
+  blockedBy        Block[]           @relation("UserBlockedBy")
+  blockedUsers     Block[]           @relation("UserBlocked")
+  following        Follow[]          @relation("UserFollowing")
+  followers        Follow[]          @relation("UserFollowers")
+  receivedRequests FriendRequest[]   @relation("ReceivedRequests")
+  sentRequests     FriendRequest[]   @relation("SentRequests")
+  friendsOf        Friendship[]      @relation("FriendOf")
+  friends          Friendship[]      @relation("UserFriends")
+  personas         Persona[]
+  ownedStorylines  Storyline[]       @relation("StorylineOwner")
+  storylineMembers StorylineMember[]
+  chronosTransactions ChronosTransaction[]
+  ownedThemes      ProfileTheme[]    @relation("ThemeOwner")
+  notifications    Notification[]
+  marketplaceListings MarketplacePersona[] @relation("MarketplaceCreator")
+  marketplacePurchases MarketplacePurchase[] @relation("MarketplaceBuyer")
+  chronosPurchases     ChronosPurchase[]
+
+  // Moderation relations
+  moderationActionsReceived ModerationAction[] @relation("UserModerated")
+  moderationActionsGiven    ModerationAction[] @relation("UserModerator")
+  
+  // New Features relations
+  personaFolders      PersonaFolder[]
+  scenarios           Scenario[]
+  scenarioLikes       ScenarioLike[]
+  scenarioComments    ScenarioComment[]
+  
+  // Badge & Event relations
+  badges              UserBadge[]
+  eventParticipations EventParticipation[]
+}
+
+model Persona {
+  id                     String              @id @default(cuid())
+  displayId              BigInt?             @unique           // Public numeric ID (e.g., 123456789101112)
+  userId                 String
+  originalCreatorId      String?                               // Original creator's user ID (persists through sales)
+  name                   String
+  title                  String?                               // Custom title/tagline (e.g., "The Golden Goose")
+  avatarUrl              String?
+  bannerUrl              String?             // Profile banner image
+  isActive               Boolean             @default(false)
+  isOnline               Boolean             @default(false)
+  description            String?
+  archetype              String?
+  gender                 String?
+  pronouns               String?             // e.g., "he/him", "she/her", "they/them"
+  age                    Int?
+  tags                   String?
+  personalityDescription String?
+  personalitySpectrums   String?
+  strengths              String?
+  flaws                  String?
+  values                 String?
+  fears                  String?
+  species                String?
+  likes                  String?
+  dislikes               String?
+  hobbies                String?
+  skills                 String?
+  languages              String?
+  habits                 String?
+  speechPatterns         String?
+  backstory              String?
+  appearance             String?
+  mbtiType               String?
+  bigFive                String?             // JSON: Big Five (OCEAN) personality traits
+  hexaco                 String?             // JSON: HEXACO personality traits (Honesty-Humility, Emotionality, eXtraversion, Agreeableness, Conscientiousness, Openness)
+  
+  // NSFW Content (18+ features)
+  nsfwEnabled            Boolean             @default(false)
+  nsfwBodyType           String?             // Body/physical details
+  nsfwKinks              String?             // JSON array: kinks/interests
+  nsfwContentWarnings    String?             // JSON array: content warnings/themes
+  nsfwOrientation        String?             // Romantic/sexual orientation details
+  nsfwRolePreference     String?             // "dominant", "submissive", "switch", "none"
+  
+  // Profile Theme (Chronos Purchase)
+  themeId                String?             // Active profile theme
+  themeEnabled           Boolean             @default(false) // Whether theme is currently displayed
+  
+  // Custom Tag (Admin-assigned)
+  customTag              String?                              // JSON: { text: string, color: string, style: 'glossy' | 'radiant' | 'shadowy' | 'shiny' | 'neon' | 'fire' | 'ice' | 'electric' }
+  
+  // Roleplay Preferences
+  rpStyle                String?             // "one_liner", "semi_lit", "literate", "novella"
+  rpPreferredGenders     String?             // JSON array: ["male", "female", "non_binary", "other"]
+  rpGenres               String?             // JSON array of preferred genres
+  rpLimits               String?             // JSON array of limits/triggers
+  rpThemes               String?             // JSON array of preferred themes/topics
+  rpExperienceLevel      String?             // "beginner", "intermediate", "advanced", "veteran"
+  rpResponseTime         String?             // "instant", "same_day", "few_days", "weekly"
+  
+  // ==================== NEW FEATURES ====================
+  
+  // Voice Claim System
+  voiceClaimId           String?             // ID referencing voice actor/character
+  voiceClaimName         String?             // Display name: "Character Name - Actor Name (Movie/Show)"
+  voiceClaimSource       String?             // Source: "movie", "tv_show", "anime", "game", "other"
+  voiceClaimNotes        String?             // Additional notes about the voice
+  
+  // Folder Organization
+  folderId               String?             // Which folder this persona belongs to
+  
+  // Animated Avatar Support
+  animatedAvatarUrl      String?             // URL for animated GIF avatar
+  hasAnimatedAvatar      Boolean             @default(false) // Whether animated avatar is set
+  
+  // Music/Spotify Integration
+  spotifyTrackId         String?             // Current Spotify track ID
+  spotifyTrackName       String?             // Track name
+  spotifyArtistName      String?             // Artist name
+  spotifyAlbumArt        String?             // Album artwork URL
+  spotifyListeningSince  DateTime?           // When they started listening
+  spotifyIsPlaying       Boolean             @default(false) // Currently playing
+  showSpotifyStatus      Boolean             @default(true) // Show Spotify status on profile
+  
+  // Custom CSS/HTML
+  customCSS              String?             // Custom CSS for profile (max 5000 chars)
+  customHTML             String?             // Custom HTML for profile (max 5000 chars)
+  enableCustomStyling    Boolean             @default(false) // Enable custom CSS/HTML
+  
+  // Partner Matching Preferences
+  lookingForPartner      Boolean             @default(false) // Actively looking for RP partners
+  partnerMatchPrefs      String?             // JSON: Partner matching preferences
+  matchCompatibilityScore Int?               // Cached compatibility score for matching
+  
+  // Alternate Images
+  alternateImageUrl      String?             // Alternate character image for scenarios
+  galleryUrls            String?             // JSON array: Additional images for art gallery
+  
+  // ==================== ENHANCED PROFILE FEATURES ====================
+  
+  // Character Quote
+  characterQuote         String?             // Memorable quote from the character
+  
+  // Psychology (Surface vs Beneath)
+  psychologySurface      String?             // Surface-level personality traits
+  psychologyBeneath      String?             // Hidden/deeper personality traits
+  
+  // Dossier Fields
+  occupation             String?             // Character's job/role
+  status                 String?             // Relationship/social status
+  orientation            String?             // Romantic orientation (SFW)
+  height                 String?             // Character height (e.g., "5'5\"")
+  
+  // Dialogue Log
+  dialogueLog            String?             // JSON array: [{ type: "greeting", content: "...", mood: "neutral" }]
+  
+  // Character Scenarios
+  characterScenarios     String?             // JSON array: [{ title: "...", description: "..." }]
+  
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  conversationsAsB       Conversation[]      @relation("ConversationB")
+  conversationsAsA       Conversation[]      @relation("ConversationA")
+  sentMessages           Message[]           @relation("MessageSender")
+  storylineMessages      StorylineMessage[]
+  storylineReactions     StorylineMessageReaction[]
+  user                   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connections            PersonaConnection[]
+  theme                  ProfileTheme?       @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  storylineBoosts        StorylineBoost[]
+  sentDmRequests         DmRequest[]         @relation("DmRequestSender")
+  receivedDmRequests     DmRequest[]         @relation("DmRequestReceiver")
+  marketplaceListing     MarketplacePersona?
+  folder                 PersonaFolder?      @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  scenarios              Scenario[]
+  scenarioComments       ScenarioComment[]
+  partnerMatches         PartnerMatch[]      @relation("PartnerMatcher")
+  matchedBy              PartnerMatch[]      @relation("PartnerMatched")
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  personaAId    String
+  personaBId    String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastMessageAt DateTime  @default(now())
+  personaB      Persona   @relation("ConversationB", fields: [personaBId], references: [id], onDelete: Cascade)
+  personaA      Persona   @relation("ConversationA", fields: [personaAId], references: [id], onDelete: Cascade)
+  messages      Message[]
+
+  @@unique([personaAId, personaBId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String       @default("")
+  imageUrl       String?
+  createdAt      DateTime     @default(now())
+  sender         Persona      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+model FriendRequest {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  receiver   User     @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+}
+
+model Friendship {
+  id          String   @id @default(cuid())
+  userId      String
+  friendId    String
+  isFavourite Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  friend      User     @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+  user        User     @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+}
+
+// DM Request System - First-time DM requests need acceptance
+model DmRequest {
+  id              String    @id @default(cuid())
+  senderId        String    // Persona who initiated the DM
+  receiverId      String    // Persona who receives the request
+  firstMessage    String    // The first message content
+  imageUrl        String?   // Optional image with first message
+  status          String    @default("pending") // "pending", "accepted", "ignored"
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  sender          Persona   @relation("DmRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver        Persona   @relation("DmRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId])
+  @@index([status])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocked   User     @relation("UserBlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocker   User     @relation("UserBlocked", fields: [blockerId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+// ==================== STORYLINE SYSTEM ====================
+
+model Storyline {
+  id             String              @id @default(cuid())
+  ownerId        String
+  name           String
+  description    String?             // Short description
+  lore           String?             // Detailed lore/backstory (NEW)
+  iconUrl        String?
+  bannerUrl      String?
+  category       String
+  tags           String?             // JSON array: Custom category tags for search
+  
+  // Customization (NEW)
+  accentColor    String?             @default("#ffffff") // Theme color
+  welcomeMessage String?             // Custom welcome message
+  memberCap      Int?                // Max members limit
+  requireApproval Boolean            @default(false) // Need approval to join
+  
+  // Boost System
+  boostChronos   Int                 @default(0) // Total active boost Chronos
+  boostTier      Int                 @default(0) // Current tier (0-13)
+  
+  isPublic       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  
+  owner          User                @relation("StorylineOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  categories     StorylineCategory[]
+  channels       StorylineChannel[]
+  members        StorylineMember[]
+  roles          StorylineRole[]
+  invites        StorylineInvite[]
+  bans           StorylineBan[]
+  pinnedMessages StorylinePinnedMessage[]
+  boosts         StorylineBoost[]
+
+  @@index([category])
+}
+
+// Channel Categories (NEW)
+model StorylineCategory {
+  id          String            @id @default(cuid())
+  storylineId String
+  name        String
+  position    Int               @default(0)
+  collapsed   Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  storyline   Storyline         @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  channels    StorylineChannel[]
+
+  @@unique([storylineId, name])
+  @@index([storylineId])
+}
+
+model StorylineChannel {
+  id          String             @id @default(cuid())
+  storylineId String
+  categoryId  String?            // Optional category (NEW)
+  name        String
+  type        String             @default("text")
+  position    Int                @default(0)
+  
+  // Channel Settings (NEW)
+  slowMode    Int?               @default(0) // Seconds between messages (0 = off)
+  topic       String?            // Channel topic/description
+  locked      Boolean            @default(false) // Only certain roles can post
+  
+  createdAt   DateTime           @default(now())
+  storyline   Storyline          @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  category    StorylineCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  messages    StorylineMessage[]
+  permissions StorylineChannelPermission[]
+
+  @@unique([storylineId, name])
+  @@index([storylineId])
+}
+
+// Channel Permissions (NEW) - Which roles can access which channels
+model StorylineChannelPermission {
+  id        String           @id @default(cuid())
+  channelId String
+  roleId    String
+  canView   Boolean          @default(true)
+  canSend   Boolean          @default(true)
+  channel   StorylineChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  role      StorylineRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, roleId])
+}
+
+model StorylineMember {
+  id          String    @id @default(cuid())
+  storylineId String
+  userId      String
+  roleId      String?   // Link to custom role (NEW)
+  role        String    @default("member") // Legacy: owner, admin, member
+  joinedAt    DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyline   Storyline @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  customRole  StorylineRole? @relation(fields: [roleId], references: [id], onDelete: SetNull)
+
+  @@unique([storylineId, userId])
+  @@index([storylineId])
+}
+
+// Custom Roles (NEW)
+model StorylineRole {
+  id                String                      @id @default(cuid())
+  storylineId       String
+  name              String
+  color             String                      @default("#ffffff")
+  position          Int                         @default(0) // Higher = more important
+  
+  // Permissions
+  canManageChannels Boolean                     @default(false)
+  canManageRoles    Boolean                     @default(false)
+  canKickMembers    Boolean                     @default(false)
+  canBanMembers     Boolean                     @default(false)
+  canManageMessages Boolean                     @default(false) // Delete others' messages
+  canInvite         Boolean                     @default(true)
+  canChangeSettings Boolean                     @default(false)
+  isAdmin           Boolean                     @default(false) // Has all permissions
+  
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  storyline         Storyline                   @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  members           StorylineMember[]
+  channelPermissions StorylineChannelPermission[]
+
+  @@unique([storylineId, name])
+  @@index([storylineId])
+}
+
+// Invite System (NEW)
+model StorylineInvite {
+  id          String    @id @default(cuid())
+  storylineId String
+  code        String    @unique
+  createdById String
+  maxUses     Int?      // Null = unlimited
+  uses        Int       @default(0)
+  expiresAt   DateTime? // Null = never expires
+  createdAt   DateTime  @default(now())
+  storyline   Storyline @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  
+  @@index([storylineId])
+  @@index([code])
+}
+
+// Ban System (NEW)
+model StorylineBan {
+  id          String    @id @default(cuid())
+  storylineId String
+  userId      String
+  bannedById  String
+  reason      String?
+  createdAt   DateTime  @default(now())
+  storyline   Storyline @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+
+  @@unique([storylineId, userId])
+  @@index([storylineId])
+}
+
+model StorylineMessage {
+  id        String           @id @default(cuid())
+  channelId String
+  senderId  String
+  content   String           @default("")
+  imageUrl  String?
+  replyToId String?
+  createdAt DateTime         @default(now())
+  channel   StorylineChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  sender    Persona          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo   StorylineMessage? @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   StorylineMessage[] @relation("MessageReplies")
+  reactions StorylineMessageReaction[]
+  pinnedBy  StorylinePinnedMessage[]
+
+  @@index([channelId])
+  @@index([senderId])
+  @@index([replyToId])
+}
+
+// Message Reactions
+model StorylineMessageReaction {
+  id        String           @id @default(cuid())
+  messageId String
+  personaId String
+  emoji     String
+  createdAt DateTime         @default(now())
+  message   StorylineMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  persona   Persona          @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, personaId, emoji])
+  @@index([messageId])
+}
+
+// Pinned Messages (NEW)
+model StorylinePinnedMessage {
+  id        String           @id @default(cuid())
+  storylineId String
+  messageId String
+  pinnedById String
+  createdAt DateTime         @default(now())
+  storyline Storyline        @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  message   StorylineMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([storylineId, messageId])
+  @@index([storylineId])
+}
+
+// Storyline Boost System
+model StorylineBoost {
+  id          String    @id @default(cuid())
+  storylineId String
+  personaId   String
+  amount      Int       // 200, 500, or 1000
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  storyline   Storyline @relation(fields: [storylineId], references: [id], onDelete: Cascade)
+  persona     Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@index([storylineId])
+  @@index([personaId])
+  @@index([expiresAt])
+}
+
+model PersonaConnection {
+  id                     String              @id @default(cuid())
+  personaId              String
+  
+  // Basic Info
+  characterName          String
+  avatarUrl              String?
+  bannerUrl              String?
+  relationshipType       String
+  specificRole           String?
+  characterAge           Int?
+  description            String?
+  
+  // Extended Profile (same as Persona)
+  gender                 String?
+  pronouns               String?
+  species                String?
+  archetype              String?
+  mbtiType               String?
+  tags                   String?
+  
+  // Personality
+  personalityDescription String?
+  personalitySpectrums   String?             // JSON
+  bigFive                String?             // JSON
+  hexaco                 String?             // JSON
+  
+  // Character Traits
+  strengths              String?             // JSON array
+  flaws                  String?             // JSON array
+  values                 String?             // JSON array
+  fears                  String?             // JSON array
+  
+  // Interests & Attributes
+  likes                  String?             // JSON array
+  dislikes               String?             // JSON array
+  hobbies                String?             // JSON array
+  skills                 String?             // JSON array
+  languages              String?             // JSON array
+  habits                 String?             // JSON array
+  speechPatterns         String?             // JSON array
+  
+  // Background
+  backstory              String?
+  appearance             String?
+  
+  // Roleplay Preferences
+  rpStyle                String?             // "one_liner", "semi_lit", "literate", "novella"
+  rpPreferredGenders     String?             // JSON array
+  rpGenres               String?             // JSON array
+  rpLimits               String?             // JSON array
+  rpThemes               String?             // JSON array
+  rpExperienceLevel      String?             // "beginner", "intermediate", "advanced", "veteran"
+  rpResponseTime         String?             // "instant", "same_day", "few_days", "weekly"
+  
+  // NSFW Content (18+ features)
+  nsfwEnabled            Boolean             @default(false)
+  nsfwBodyType           String?
+  nsfwKinks              String?             // JSON array
+  nsfwContentWarnings    String?             // JSON array
+  nsfwOrientation        String?
+  nsfwRolePreference     String?             // "dominant", "submissive", "switch", "none"
+  
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  persona                Persona             @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@index([personaId])
+}
+
+// ==================== CHRONOS CURRENCY SYSTEM ====================
+
+// Profile Themes (Purchasable with Chronos)
+model ProfileTheme {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  previewUrl  String?    // Preview image
+  // Theme settings (stored as JSON-like strings)
+  background  String?    // Background color/gradient
+  borderColor String?    // Border color
+  textColor   String?    // Text color
+  accentColor String?    // Accent color
+  backgroundImage String? // Optional background image URL
+  
+  // Pricing
+  price       Int        @default(100)  // Cost in Chronos
+  
+  // System themes are available to everyone, user themes are custom
+  isSystem    Boolean    @default(true)
+  isActive    Boolean    @default(true) // Can be purchased
+  
+  createdAt   DateTime   @default(now())
+  
+  // Relations
+  ownerId     String?
+  owner       User?      @relation("ThemeOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  personas    Persona[]
+  
+  @@index([isActive])
+}
+
+// Chronos Transaction History
+model ChronosTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int                    // Positive = earned, Negative = spent
+  balance     Int                    // Balance after transaction
+  type        String                 // "purchase", "earn", "bonus", "spend", "admin"
+  category    String                 // "slot", "storyline", "theme", "name_color", "daily_login", etc.
+  description String
+  
+  // Reference to what was purchased (optional)
+  referenceId String?                // ID of the item purchased (theme, etc.)
+  
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// ==================== ADMIN SYSTEM ====================
+
+// Content Reports
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String   // User who reported
+  reportedId  String?  // User being reported (if user report)
+  type        String   // "user", "storyline", "message", "persona"
+  reason      String
+  details     String?  // Additional details
+  status      String   @default("pending") // pending, reviewed, resolved, dismissed
+  
+  // Reference info
+  referenceId String?  // ID of the reported content
+  
+  // Review info
+  reviewedById String?
+  reviewedAt  DateTime?
+  reviewNote  String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// Admin Action Log
+model AdminLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  action      String   // "ban_user", "delete_content", "modify_chronos", etc.
+  targetType  String   // "user", "storyline", "message", etc.
+  targetId    String?
+  details     String?  // JSON string with action details
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// User Notifications
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String   // User who receives the notification
+  type        String   // "chronos_reset", "chronos_grant", "chronos_deduct", "system", etc.
+  title       String   // Short title
+  message     String   // Full message/details
+  
+  // Additional data (JSON string)
+  data        String?  // Extra info like amount, reason, admin name, etc.
+  
+  isRead      Boolean  @default(false)
+  isDismissed Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ==================== PERSONA MARKETPLACE ====================
+
+// Marketplace Persona Listing
+model MarketplacePersona {
+  id              String   @id @default(cuid())
+  personaId       String   @unique // Original persona being listed (one listing per persona)
+  creatorId       String   // User who created the listing
+  
+  // Listing Details
+  name            String   // Persona name (copied for display)
+  avatarUrl       String?  // Avatar URL (copied for display)
+  description     String?  // Marketplace description (can differ from persona)
+  tags            String?  // Comma-separated tags for search
+  
+  // Pricing
+  price           Int      @default(0)   // Price in Chronos (0 = free, max 430)
+  
+  // Stats
+  downloads       Int      @default(0)   // Number of times downloaded/purchased
+  revenue         Int      @default(0)   // Total Chronos earned
+  
+  // Status
+  isActive        Boolean  @default(true)  // Is listing active
+  isFeatured      Boolean  @default(false) // Featured on marketplace
+  notifyOnPurchase Boolean @default(true)  // Notify creator when persona is purchased/downloaded
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  persona         Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  creator         User     @relation("MarketplaceCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  purchases       MarketplacePurchase[]
+  
+  @@index([creatorId])
+  @@index([isActive])
+  @@index([price])
+  @@index([downloads])
+  @@index([createdAt])
+}
+
+// Marketplace Purchase Record
+model MarketplacePurchase {
+  id                  String   @id @default(cuid())
+  marketplacePersonaId String
+  buyerId             String   // User who purchased
+
+  // Purchase Details
+  pricePaid           Int      // Price at time of purchase
+  creatorEarnings     Int      // Amount the creator received (90% of price)
+
+  // The copied persona created for the buyer
+  copiedPersonaId     String?  // ID of the new persona created for buyer
+
+  createdAt           DateTime @default(now())
+
+  // Relations
+  marketplacePersona  MarketplacePersona @relation(fields: [marketplacePersonaId], references: [id], onDelete: Cascade)
+  buyer               User     @relation("MarketplaceBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@unique([marketplacePersonaId, buyerId]) // Can only purchase once
+  @@index([buyerId])
+  @@index([createdAt])
+}
+
+// ==================== CHRONOS REAL-MONEY PURCHASES ====================
+
+// Chronos Purchase - Real money purchases via Stripe
+model ChronosPurchase {
+  id                String   @id @default(cuid())
+  userId            String
+
+  // Purchase Details
+  packId            String   // "starter", "standard", "value"
+  chronosAmount     Int      // Base Chronos amount
+  bonusAmount       Int      // Bonus Chronos (if any)
+  totalChronos      Int      // Total Chronos received
+
+  // Payment Details
+  priceUsd          String   // e.g., "$1.99", "$4.99", "$9.99"
+  priceCents        Int      // Price in cents for Stripe
+
+  // Stripe Data
+  stripeSessionId   String?  @unique // Stripe Checkout Session ID
+  stripePaymentId   String?  // Stripe Payment Intent ID
+  paymentStatus     String   @default("pending") // "pending", "completed", "failed", "refunded"
+
+  // Receipt Data
+  receiptNumber     String?  @unique // Human-readable receipt number (e.g., "CHR-2024-000001")
+  receiptData       String?  // JSON string with full receipt details
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  completedAt       DateTime?
+
+  // Relations
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+// ==================== MODERATION ACTIONS ====================
+
+// Moderation Action - Records all moderation actions taken
+model ModerationAction {
+  id          String    @id @default(cuid())
+  adminId     String    // User who performed the action
+  targetId    String    // User who was actioned upon
+  action      String    // "warn", "mute", "ban", "kick", "suspend", "freeze", etc.
+  targetType  String    @default("user") // "user", "storyline", "channel", etc.
+  reason      String?   // Reason for the action
+  duration    Int?      // Duration in minutes (if applicable)
+  notes       String?   // Additional notes
+  
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime? // When the action expires (for temporary actions)
+  
+  // Relations
+  admin       User      @relation("UserModerator", fields: [adminId], references: [id], onDelete: Cascade)
+  target      User      @relation("UserModerated", fields: [targetId], references: [id], onDelete: Cascade)
+  
+  @@index([adminId])
+  @@index([targetId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ==================== PERSONA FOLDERS ====================
+
+// Character Folders - Organize personas by universe, genre, etc.
+model PersonaFolder {
+  id          String     @id @default(cuid())
+  userId      String
+  name        String     // Folder name (user-defined)
+  description String?    // Optional description
+  color       String?    @default("#ffffff") // Folder color
+  icon        String?    // Emoji or icon identifier
+  position    Int        @default(0) // Sort order
+  isDefault   Boolean    @default(false) // Default folder for new personas
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  personas    Persona[]
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+// ==================== SCENARIOS SYSTEM ====================
+
+// Scenarios - Host personas for specific roleplays in Storylines > Scenarios tab
+model Scenario {
+  id                String   @id @default(cuid())
+  personaId         String
+  userId            String
+  
+  // Scenario Details
+  title             String                        // Scenario prompt/title
+  description       String?                       // Full scenario description
+  scenarioContext   String?                       // Sets the context for the roleplay
+  personalityNotes  String?                       // Defines how the character thinks and behaves
+  
+  // Visual Elements
+  illustrationUrl   String?                       // Main character illustration
+  alternateImageUrl String?                       // Alternate character image
+  galleryUrls       String?                       // JSON array of additional images for art gallery
+  
+  // Stats
+  likeCount         Int       @default(0)
+  favoriteCount     Int       @default(0)
+  viewCount         Int       @default(0)
+  
+  // Creator Links
+  discordLink       String?                       // Discord server link
+  suggestionLink    String?                       // Link for persona change suggestions
+  
+  // Timestamps
+  publishedAt       DateTime?                     // When published publicly
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Initial Messages (stored as JSON array)
+  initialMessages   String?                       // JSON array of starter prompts
+  initialMessagesEnabled Boolean @default(true)   // Toggle initial messages on/off
+  
+  // Creator Notes
+  pinnedNote        String?                       // Pinned creator note explaining intended use
+  
+  // Status
+  isPublic          Boolean   @default(true)
+  isActive          Boolean   @default(true)
+  
+  // Relations
+  persona           Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes             ScenarioLike[]
+  comments          ScenarioComment[]
+  
+  @@index([personaId])
+  @@index([userId])
+  @@index([publishedAt])
+  @@index([isPublic])
+}
+
+// Scenario Likes
+model ScenarioLike {
+  id          String   @id @default(cuid())
+  scenarioId  String
+  userId      String
+  isFavorite  Boolean  @default(false)  // Like vs Favorite
+  createdAt   DateTime @default(now())
+  
+  scenario    Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([scenarioId, userId])
+  @@index([scenarioId])
+  @@index([userId])
+}
+
+// Scenario Comments
+model ScenarioComment {
+  id          String   @id @default(cuid())
+  scenarioId  String
+  userId      String
+  personaId   String?                      // Optional: comment as a persona
+  content     String
+  isPinned    Boolean  @default(false)     // Pinned by creator
+  isCreatorNote Boolean @default(false)    // Official creator note
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  scenario    Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  persona     Persona? @relation(fields: [personaId], references: [id], onDelete: SetNull)
+  
+  @@index([scenarioId])
+  @@index([userId])
+  @@index([isPinned])
+}
+
+// ==================== PARTNER MATCHING ====================
+
+// Partner Matching - Compatibility based on RP preferences
+model PartnerMatch {
+  id              String   @id @default(cuid())
+  matcherId       String   // Persona looking for partners
+  matchedId       String   // Persona being matched with
+  compatibilityScore Int   // 0-100 compatibility score
+  matchReasons    String?  // JSON array of why they match
+  
+  // Match Status
+  status          String   @default("suggested")  // "suggested", "liked", "passed", "matched"
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  matcher         Persona  @relation("PartnerMatcher", fields: [matcherId], references: [id], onDelete: Cascade)
+  matched         Persona  @relation("PartnerMatched", fields: [matchedId], references: [id], onDelete: Cascade)
+  
+  @@unique([matcherId, matchedId])
+  @@index([matcherId])
+  @@index([matchedId])
+  @@index([compatibilityScore])
+}
+
+// ==================== VOICE CLAIMS DATABASE ====================
+
+// Voice Claims - Searchable database of movie/TV character voices
+model VoiceClaim {
+  id              String   @id @default(cuid())
+  characterName   String   // Character name
+  actorName       String   // Voice actor name
+  sourceTitle     String   // Movie/TV show/Anime/Game title
+  sourceType      String   // "movie", "tv_show", "anime", "game", "other"
+  year            Int?     // Release year
+  imageUrl        String?  // Character/actor image
+  description     String?  // Voice description
+  tags            String?  // JSON array of voice characteristic tags
+  
+  // Popularity
+  useCount        Int      @default(0)  // How many personas use this voice
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([characterName, actorName, sourceTitle])
+  @@index([characterName])
+  @@index([actorName])
+  @@index([sourceTitle])
+  @@index([sourceType])
+}
+// ==================== BADGE SYSTEM ====================
+
+// Badge Definitions - Available badges that can be earned
+
+// ==================== BADGE SYSTEM ====================
+
+// Badge Definitions - Available badges that can be earned
+model Badge {
+  id              String   @id @default(cuid())
+  name            String   @unique  // e.g., "christmas_2024", "founder", "early_adopter"
+  displayName     String             // e.g., "Christmas 2024", "Founder"
+  description     String?            // Badge description
+  icon            String             // Emoji or icon URL
+  category        String             // "event", "achievement", "special", "milestone", "ooc"
+  rarity          String   @default("common")  // "common", "uncommon", "rare", "epic", "legendary"
+  color           String?            // Badge color (hex)
+  
+  // Acquisition
+  howToEarn       String?            // Instructions on how to earn
+  isLimited       Boolean  @default(false)  // Limited time/quantity
+  maxAwarded      Int?               // Max times this badge can be awarded (null = unlimited)
+  timesAwarded    Int      @default(0)  // Current count of awards
+  
+  // Event association
+  eventId         String?            // Linked event (if event badge)
+  
+  // Display
+  showOnProfile   Boolean  @default(true)  // Show on OOC profile by default
+  priority        Int      @default(0)  // Higher = shown first
+  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  
+  userBadges      UserBadge[]
+  event           Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  
+  @@index([category])
+  @@index([rarity])
+  @@index([isActive])
+}
+
+// User Badges - Badges earned by users
+model UserBadge {
+  id          String   @id @default(cuid())
+  userId      String
+  badgeId     String
+  
+  // Metadata
+  earnedAt    DateTime @default(now())
+  earnedReason String?           // Context of how they earned it
+  
+  // Display
+  isDisplayed  Boolean @default(true)  // Show on profile
+  displayOrder Int     @default(0)     // Order on profile
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge       Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+}
+
+// ==================== EVENTS SYSTEM ====================
+
+// Events - Community events and holidays
+model Event {
+  id              String   @id @default(cuid())
+  name            String   @unique          // e.g., "Christmas 2024", "4th of July 2025"
+  type            String                    // "holiday", "real_event", "community", "special"
+  description     String?
+  
+  // Timing
+  startDate       DateTime
+  endDate         DateTime
+  
+  // Theme customization
+  primaryColor    String?            // Main theme color (hex)
+  secondaryColor  String?            // Accent color (hex)
+  backgroundColor String?            // Background color/gradient
+  logoUrl         String?            // Custom logo for event
+  bannerUrl       String?            // Banner image
+  iconUrl         String?            // Event icon
+  
+  // Features
+  badgeId         String?            // Badge awarded for participation (can also be in badges relation)
+  rewardChronos   Int      @default(0)  // Chronos reward for participating
+  specialFeatures String?            // JSON: enabled special features during event
+  
+  // Status
+  isActive        Boolean  @default(true)
+  isRecurring     Boolean  @default(false)  // Recurs annually
+  recurringPattern String?            // "annual", "monthly", etc.
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  badges          Badge[]
+  participations  EventParticipation[]
+  
+  @@index([type])
+  @@index([isActive])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+// Event Participation - Users who participated in events
+model EventParticipation {
+  id              String   @id @default(cuid())
+  eventId         String
+  userId          String
+  
+  // Participation details
+  joinedAt        DateTime @default(now())
+  participatedAt  DateTime?           // When they actively participated
+  
+  // Rewards
+  chronosAwarded  Int      @default(0)
+  badgeAwarded    Boolean  @default(false)
+  
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+// ==================== MODERATION AUDIT LOG ====================
+
+// Moderation Audit Log - Tracks staff access to sensitive content
+model ModerationAuditLog {
+  id          String   @id @default(cuid())
+  staffId     String   // Staff member who accessed
+  action      String   // "view_dm", "view_storyline", "view_report_dm", "flag_dm"
+  
+  // Target info
+  targetType  String   // "dm_conversation", "storyline", "report"
+  targetId    String?  // ID of the conversation, storyline, or report
+  
+  // For DMs - who was involved
+  personaAId  String?  // First persona in DM
+  personaBId  String?  // Second persona in DM
+  
+  // Reason for access
+  reason      String?  // "report_review", "manual_flag", "routine_check"
+  reportId    String?  // Reference to report if applicable
+  
+  // Additional context
+  details     String?  // JSON: Additional details about the access
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([staffId])
+  @@index([action])
+  @@index([targetType])
+  @@index([createdAt])
+}
