@@ -65,6 +65,7 @@ export interface Persona {
   // Overview
   description: string | null
   archetype: string | null
+  secondaryArchetype: string | null  // Secondary archetype for dual archetype system
   gender: string | null
   pronouns: string | null
   age: number | null
@@ -257,6 +258,7 @@ export function transformPersona(raw: {
   isOnline: boolean
   description: string | null
   archetype: string | null
+  secondaryArchetype: string | null
   gender: string | null
   pronouns: string | null
   age: number | null
@@ -330,6 +332,7 @@ export function transformPersona(raw: {
     isOnline: raw.isOnline,
     description: raw.description,
     archetype: raw.archetype,
+    secondaryArchetype: raw.secondaryArchetype ?? null,
     gender: raw.gender,
     pronouns: raw.pronouns,
     age: raw.age,

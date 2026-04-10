@@ -13,6 +13,7 @@ export interface PersonaFormData {
   title?: string[]
   description?: string | null
   archetype?: string | null
+  secondaryArchetype?: string | null  // Secondary archetype for dual archetype system
   gender?: string | null
   pronouns?: string | null
   age?: number | null

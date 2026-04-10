@@ -287,6 +287,7 @@ interface FormData {
   bannerUrl: string | null
   description: string | null
   archetype: string | null
+  secondaryArchetype: string | null  // Secondary archetype for dual archetype system
   gender: string | null
   pronouns: string | null
   age: number | null
@@ -359,6 +360,7 @@ const defaultFormData: FormData = {
   bannerUrl: null,
   description: null,
   archetype: null,
+  secondaryArchetype: null,  // Secondary archetype for dual archetype system
   gender: null,
   pronouns: null,
   age: null,
@@ -636,6 +638,7 @@ export function PersonaForm({ isOpen, onClose, persona, onSave, isAdult = false 
           bannerUrl: imported.bannerUrl || null,
           description: imported.description || null,
           archetype: imported.archetype || null,
+          secondaryArchetype: imported.secondaryArchetype || null,
           gender: imported.gender || null,
           pronouns: imported.pronouns || null,
           age: imported.age || null,
@@ -716,6 +719,7 @@ export function PersonaForm({ isOpen, onClose, persona, onSave, isAdult = false 
         bannerUrl: persona.bannerUrl || null,
         description: persona.description,
         archetype: persona.archetype,
+        secondaryArchetype: persona.secondaryArchetype,
         gender: persona.gender,
         pronouns: persona.pronouns || null,
         age: persona.age,
@@ -972,7 +976,7 @@ export function PersonaForm({ isOpen, onClose, persona, onSave, isAdult = false 
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-semibold text-white truncate">{formData.name || 'New Character'}</h3>
-                    <p className="text-xs text-gray-400/60 truncate">{formData.archetype || 'No archetype'}</p>
+                    <p className="text-xs text-gray-400/60 truncate">{formData.archetype || 'No archetype'}{formData.secondaryArchetype ? ` / ${formData.secondaryArchetype}` : ''}</p>
                   </div>
                 </div>
                 <p className="text-[10px] text-gray-500/60 text-center mt-2">Recommended Avatar Size: 256×256</p>
@@ -1064,7 +1068,7 @@ export function PersonaForm({ isOpen, onClose, persona, onSave, isAdult = false 
                           {/* Archetype badge */}
                           <div className="absolute top-3 right-3">
                             <div className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm text-xs text-gray-200 border border-white/10">
-                              {formData.archetype || 'No Archetype'}
+                              {formData.archetype || 'No Archetype'}{formData.secondaryArchetype ? ` / ${formData.secondaryArchetype}` : ''}
                             </div>
                           </div>
                         </div>
@@ -1290,11 +1294,20 @@ export function PersonaForm({ isOpen, onClose, persona, onSave, isAdult = false 
                       </div>
                       
                       <StyledSelect
-                        label="Archetype"
+                        label="Primary Archetype"
                         value={formData.archetype || ''}
                         onChange={(v) => updateField('archetype', v || null)}
                         options={[...PERSONA_ARCHETYPES]}
-                        placeholder="Select archetype..."
+                        placeholder="Select primary archetype..."
+                      />
+                      
+                      <StyledSelect
+                        label="Secondary Archetype"
+                        value={formData.secondaryArchetype || ''}
+                        onChange={(v) => updateField('secondaryArchetype', v || null)}
+                        options={[...PERSONA_ARCHETYPES]}
+                        placeholder="Select secondary archetype (optional)..."
+                        description="Adds depth & nuance"
                       />
                       
                       <StyledSelect

@@ -122,6 +122,7 @@ model Persona {
   isOnline               Boolean             @default(false)
   description            String?
   archetype              String?
+  secondaryArchetype     String?                               // Secondary archetype for dual archetype system
   gender                 String?
   pronouns               String?             // e.g., "he/him", "she/her", "they/them"
   age                    Int?

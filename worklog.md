@@ -21,3 +21,40 @@ Stage Summary:
 - 36 new archetypes: Morally Grey, Dominant, Protective, Cold & Distant, Obsessive, Brooding, Flirtatious, Tsundere, Yandere, Kuudere, Mysterious, Wholesome, Chaotic, Defiant, Possessive, Devoted, Dark & Gritty, Supernatural, Royalty, Warrior, Scholar, Trauma-Coded, Protector, Street-Smart, Trickster, Rebel, Sage, Lover, Villain, Hero, Antihero, Caregiver, Explorer, Creator, Ruler, Other
 - No database migration needed (archetype is plain String field)
 - Advanced search previously had divergent archetype list (Jester/Magician/Outlaw) - now unified
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Dual Archetype System + Mood Board + DNA Sigil
+
+Work Log:
+- Added `secondaryArchetype String?` field to Persona model in prisma/schema.prisma
+- Ran `bun run db:push` to sync schema with SQLite database
+- Added `secondaryArchetype: string | null` to Persona interface in persona-store.ts
+- Added `secondaryArchetype` to transformPersona raw type and transformation logic
+- Added `secondaryArchetype` to PersonaFormData interface in use-personas.ts
+- Added `secondaryArchetype` validation to API route (z.string().max(50).optional().nullable())
+- Added `secondaryArchetype` to persona creation in API route
+- Updated persona-form.tsx FormData type with secondaryArchetype field
+- Updated persona-form.tsx default form data with secondaryArchetype: null
+- Updated persona-form.tsx import handler to include secondaryArchetype
+- Updated persona-form.tsx edit handler to include secondaryArchetype
+- Changed "Archetype" label to "Primary Archetype" and added "Secondary Archetype" selector with description "Adds depth & nuance"
+- Updated persona form preview to show dual archetype as "Primary / Secondary"
+- Updated persona form banner badge to show dual archetype
+- Expanded archetypeConfig in persona-card.tsx from 6 entries to full 36+ entries
+- Added Shield icon import to persona-card.tsx
+- Added secondaryArchetype prop to PersonaCardProps interface
+- Added secondaryConfig and SecondaryIcon logic to persona card
+- Updated archetype icon area to show both primary (large) and secondary (smaller, offset) icons
+- Created persona-dna-sigil.tsx component - algorithmic SVG sigil generator
+- Created persona-mood-board.tsx component - AI image generation mood board UI
+- Created /api/moodboard API endpoint - generates 4 images from persona traits using z-ai-web-dev-sdk
+- Lint passes cleanly, dev server running successfully
+
+Stage Summary:
+- Dual Archetype System fully implemented end-to-end (schema → store → API → form → display)
+- Persona DNA Sigil: purely algorithmic visual component, no AI needed, zero cost
+- Persona Mood Board: uses z-ai-web-dev-sdk Image Generation API (free, included in platform)
+- All 3 features confirmed free to implement and use
+- 36 archetypes now produce 1,260+ dual archetype combinations

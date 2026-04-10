@@ -16,6 +16,7 @@ const createPersonaSchema = z.object({
   title: z.array(z.string().max(100)).max(10).optional(), // Custom archetypes as array
   description: z.string().max(12000, 'Description must be at most 12000 characters').optional().nullable(),
   archetype: z.string().max(50).optional().nullable(),
+  secondaryArchetype: z.string().max(50).optional().nullable(), // Dual archetype system
   gender: z.string().max(50).optional().nullable(),
   pronouns: z.string().max(50).optional().nullable(),
   age: z.number().int().min(0).max(9999).optional().nullable(),
@@ -306,6 +307,7 @@ export async function POST(request: NextRequest) {
         title: data.title ? JSON.stringify(data.title) : null,
         description: data.description || null,
         archetype: data.archetype || null,
+        secondaryArchetype: data.secondaryArchetype || null,
         gender: data.gender || null,
         pronouns: data.pronouns || null,
         age: data.age ?? null,
