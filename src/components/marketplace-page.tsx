@@ -33,48 +33,9 @@ interface MarketplaceListing {
   showFullDetails?: boolean
 }
 
-// Archetype icons and colors
-const ARCHETYPE_CONFIG: Record<string, { icon: string; color: string; bgColor: string }> = {
-  'All': { icon: '✨', color: 'text-gray-300', bgColor: 'bg-white/10' },
-  // New behaviour-based archetypes
-  'Morally Grey': { icon: '⚖️', color: 'text-gray-300', bgColor: 'bg-gray-500/30' },
-  'Dominant': { icon: '🖤', color: 'text-purple-300', bgColor: 'bg-purple-500/30' },
-  'Protective': { icon: '🛡️', color: 'text-blue-300', bgColor: 'bg-blue-500/30' },
-  'Cold & Distant': { icon: '🧊', color: 'text-sky-300', bgColor: 'bg-sky-500/30' },
-  'Obsessive': { icon: '👁️', color: 'text-red-300', bgColor: 'bg-red-500/30' },
-  'Brooding': { icon: '🌑', color: 'text-slate-300', bgColor: 'bg-slate-500/30' },
-  'Flirtatious': { icon: '😏', color: 'text-pink-300', bgColor: 'bg-pink-500/30' },
-  'Tsundere': { icon: '💢', color: 'text-orange-300', bgColor: 'bg-orange-500/30' },
-  'Yandere': { icon: '🩸', color: 'text-red-400', bgColor: 'bg-red-600/30' },
-  'Kuudere': { icon: '🧊', color: 'text-cyan-300', bgColor: 'bg-cyan-500/30' },
-  'Mysterious': { icon: '🌫️', color: 'text-violet-300', bgColor: 'bg-violet-500/30' },
-  'Wholesome': { icon: '🌻', color: 'text-yellow-300', bgColor: 'bg-yellow-500/30' },
-  'Chaotic': { icon: '🌀', color: 'text-amber-300', bgColor: 'bg-amber-500/30' },
-  'Defiant': { icon: '✊', color: 'text-orange-400', bgColor: 'bg-orange-600/30' },
-  'Possessive': { icon: '⛓️', color: 'text-rose-300', bgColor: 'bg-rose-500/30' },
-  'Devoted': { icon: '🕯️', color: 'text-amber-200', bgColor: 'bg-amber-400/20' },
-  'Dark & Gritty': { icon: '🖤', color: 'text-gray-400', bgColor: 'bg-gray-700/40' },
-  'Supernatural': { icon: '👻', color: 'text-indigo-300', bgColor: 'bg-indigo-500/30' },
-  'Royalty': { icon: '👑', color: 'text-yellow-400', bgColor: 'bg-yellow-500/30' },
-  'Warrior': { icon: '🗡️', color: 'text-red-300', bgColor: 'bg-red-500/30' },
-  'Scholar': { icon: '📖', color: 'text-indigo-300', bgColor: 'bg-indigo-400/30' },
-  'Trauma-Coded': { icon: '🩹', color: 'text-rose-200', bgColor: 'bg-rose-400/20' },
-  'Protector': { icon: '🛡️', color: 'text-blue-400', bgColor: 'bg-blue-500/30' },
-  'Street-Smart': { icon: '🏙️', color: 'text-zinc-300', bgColor: 'bg-zinc-500/30' },
-  // Classic archetypes (kept for backward compatibility)
-  'Trickster': { icon: '🃏', color: 'text-amber-400', bgColor: 'bg-amber-500/30' },
-  'Rebel': { icon: '🔥', color: 'text-orange-400', bgColor: 'bg-orange-500/30' },
-  'Sage': { icon: '📚', color: 'text-indigo-400', bgColor: 'bg-indigo-500/30' },
-  'Lover': { icon: '💕', color: 'text-pink-400', bgColor: 'bg-pink-500/30' },
-  'Villain': { icon: '💀', color: 'text-red-400', bgColor: 'bg-red-500/30' },
-  'Hero': { icon: '⚔️', color: 'text-blue-400', bgColor: 'bg-blue-500/30' },
-  'Antihero': { icon: '🦹', color: 'text-gray-400', bgColor: 'bg-gray-500/30' },
-  'Caregiver': { icon: '💝', color: 'text-rose-400', bgColor: 'bg-rose-500/30' },
-  'Explorer': { icon: '🗺️', color: 'text-emerald-400', bgColor: 'bg-emerald-500/30' },
-  'Creator': { icon: '🎨', color: 'text-cyan-400', bgColor: 'bg-cyan-500/30' },
-  'Ruler': { icon: '👑', color: 'text-yellow-400', bgColor: 'bg-yellow-500/30' },
-  'Other': { icon: '📖', color: 'text-gray-400', bgColor: 'bg-gray-500/30' },
-}
+// Archetype icons and colors (centralized)
+import { ARCHETYPE_EMOJI_CONFIG, getArchetypeEmojiConfig } from '@/lib/archetype-config'
+const ARCHETYPE_CONFIG = ARCHETYPE_EMOJI_CONFIG
 
 export function MarketplacePage() {
   const { user } = useAuth()

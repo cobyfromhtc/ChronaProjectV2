@@ -510,7 +510,7 @@ export function CharacterProfileModal({
         </div>
 
         {/* Stats Bar */}
-        <div className="px-4 py-3 border-b border-white/15 flex items-center gap-6">
+        <div className="px-4 py-3 border-b border-white/15 flex items-center gap-x-6 gap-y-2 flex-wrap">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-gray-400" />

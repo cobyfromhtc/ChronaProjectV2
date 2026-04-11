@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ReceiptModal } from '@/components/receipt-modal'
+import { useToast } from '@/hooks/use-toast'
 
 // Chronos packs with Stripe integration
 const CHRONOS_PACKS = [
@@ -88,6 +89,7 @@ export function WalletPage() {
   const [giftMessage, setGiftMessage] = useState('')
   const [isGifting, setIsGifting] = useState(false)
   const [giftError, setGiftError] = useState<string | null>(null)
+  const { toast } = useToast()
 
   // Check for successful purchase on mount
   useEffect(() => {
@@ -163,7 +165,7 @@ export function WalletPage() {
       }
     } catch (error) {
       console.error('Checkout error:', error)
-      alert(error instanceof Error ? error.message : 'Failed to start checkout')
+      toast({ title: 'Error', description: error instanceof Error ? error.message : 'Failed to start checkout', variant: 'destructive' })
       setIsProcessingPayment(false)
     }
   }
@@ -181,7 +183,7 @@ export function WalletPage() {
         setSuccessMessage('✅ Extra persona slot purchased!')
       }
     } else {
-      alert(result.error || 'Failed to purchase slot')
+      toast({ title: 'Error', description: result.error || 'Failed to purchase slot', variant: 'destructive' })
     }
   }
 
@@ -198,7 +200,7 @@ export function WalletPage() {
         setSuccessMessage('✅ Name color updated!')
       }
     } else {
-      alert(result.error || 'Failed to purchase name color')
+      toast({ title: 'Error', description: result.error || 'Failed to purchase name color', variant: 'destructive' })
     }
   }
 
@@ -215,7 +217,7 @@ export function WalletPage() {
         setSuccessMessage('✅ Theme purchased!')
       }
     } else {
-      alert(result.error || 'Failed to purchase theme')
+      toast({ title: 'Error', description: result.error || 'Failed to purchase theme', variant: 'destructive' })
     }
   }
 
@@ -461,7 +463,7 @@ export function WalletPage() {
                   <p className="text-gray-400/60 text-sm mb-4">
                     Purchase Chronos securely via Stripe. Instant delivery after payment.
                   </p>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {CHRONOS_PACKS.map((pack) => (
                       <button
                         key={pack.id}

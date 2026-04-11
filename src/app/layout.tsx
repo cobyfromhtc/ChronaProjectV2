@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   keywords: ["Chrona", "roleplay", "storylines", "personas", "chat", "creative writing"],
   authors: [{ name: "Chrona Team" }],
   icons: {
-    icon: "/logo.png",
+    icon: "/logo.svg",
   },
   openGraph: {
     title: "Chrona - Roleplay Universe",

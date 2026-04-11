@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, VisuallyHidden } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { 
@@ -362,7 +363,7 @@ function AuthPage() {
           <div className="relative mb-4">
             <div className="absolute inset-0 bg-white/20 rounded-2xl blur-xl" />
             <img 
-              src="/logo.png" 
+              src="/logo.svg" 
               alt="Chrona" 
               className="relative w-16 h-16 rounded-2xl object-cover shadow-2xl"
             />
@@ -483,7 +484,7 @@ function AuthPage() {
                       value={signupForm.username}
                       onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })}
                       required
-                      className="w-full h-10 px-4 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all"
+                      className="w-full h-11 px-4 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all"
                     />
                     <p className="text-[10px] text-gray-600">3-20 characters, letters, numbers, underscores</p>
                   </div>
@@ -497,7 +498,7 @@ function AuthPage() {
                         value={signupForm.password}
                         onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
                         required
-                        className="w-full h-10 px-4 pr-10 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all"
+                        className="w-full h-11 px-4 pr-10 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all"
                       />
                       <button
                         type="button"
@@ -518,7 +519,7 @@ function AuthPage() {
                       value={signupForm.confirmPassword}
                       onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
                       required
-                      className="w-full h-10 px-4 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all"
+                      className="w-full h-11 px-4 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/30 focus:bg-white/[0.07] transition-all"
                     />
                   </div>
                   
@@ -531,7 +532,7 @@ function AuthPage() {
                         value={signupForm.birthDay || ''}
                         onChange={(e) => setSignupForm({ ...signupForm, birthDay: parseInt(e.target.value) })}
                         required
-                        className="w-full h-10 px-3 bg-white/5 border border-white/10 rounded-lg text-white text-sm appearance-none cursor-pointer focus:outline-none focus:border-white/30 transition-all"
+                        className="w-full h-11 px-3 bg-white/5 border border-white/10 rounded-lg text-white text-sm appearance-none cursor-pointer focus:outline-none focus:border-white/30 transition-all"
                       >
                         <option value="" disabled className="bg-[#0c0c0c] text-gray-500">Day</option>
                         {days.map(day => (
@@ -543,7 +544,7 @@ function AuthPage() {
                         value={signupForm.birthMonth || ''}
                         onChange={(e) => setSignupForm({ ...signupForm, birthMonth: parseInt(e.target.value) })}
                         required
-                        className="w-full h-10 px-3 bg-white/5 border border-white/10 rounded-lg text-white text-sm appearance-none cursor-pointer focus:outline-none focus:border-white/30 transition-all"
+                        className="w-full h-11 px-3 bg-white/5 border border-white/10 rounded-lg text-white text-sm appearance-none cursor-pointer focus:outline-none focus:border-white/30 transition-all"
                       >
                         <option value="" disabled className="bg-[#0c0c0c] text-gray-500">Month</option>
                         {months.map(month => (
@@ -555,7 +556,7 @@ function AuthPage() {
                         value={signupForm.birthYear || ''}
                         onChange={(e) => setSignupForm({ ...signupForm, birthYear: parseInt(e.target.value) })}
                         required
-                        className="w-full h-10 px-3 bg-white/5 border border-white/10 rounded-lg text-white text-sm appearance-none cursor-pointer focus:outline-none focus:border-white/30 transition-all"
+                        className="w-full h-11 px-3 bg-white/5 border border-white/10 rounded-lg text-white text-sm appearance-none cursor-pointer focus:outline-none focus:border-white/30 transition-all"
                       >
                         <option value="" disabled className="bg-[#0c0c0c] text-gray-500">Year</option>
                         {years.map(year => (
@@ -725,6 +726,7 @@ function MyPersonasModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
   const [editingPersona, setEditingPersona] = useState<Persona | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [listingPersona, setListingPersona] = useState<Persona | null>(null)
   
   // UI State
@@ -787,15 +789,21 @@ function MyPersonasModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
   }
   
   const handleDelete = async (id: string) => { 
-    if (!confirm('Are you sure you want to delete this persona?')) return
+    setDeleteConfirmId(id); return
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmId) return
+    const id = deleteConfirmId
+    setDeleteConfirmId(null)
     setDeletingId(id)
-    try { 
-      await deletePersona(id) 
-    } catch (err) { 
-      console.error('Failed to delete:', err) 
-    } finally { 
-      setDeletingId(null) 
-    } 
+    try {
+      await deletePersona(id)
+    } catch (err) {
+      console.error('Failed to delete:', err)
+    } finally {
+      setDeletingId(null)
+    }
   }
   
   const handleSavePersona = async (data: {
@@ -932,7 +940,7 @@ function MyPersonasModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             </Avatar>
             {/* Active indicator */}
             {persona.isActive && (
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 border-2 border-[#0d0718] flex items-center justify-center shadow-lg shadow-emerald-500/30">
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 border-2 border-black flex items-center justify-center shadow-lg shadow-emerald-500/30">
                 <Zap className="w-3 h-3 text-white" />
               </div>
             )}
@@ -987,7 +995,7 @@ function MyPersonasModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
           </div>
           
           {/* Actions - Show on hover with smooth transition */}
-          <div className={`flex items-center gap-1.5 transition-all duration-300 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'}`}>
+          <div className={`flex items-center gap-1.5 transition-all duration-300 sm:opacity-0 sm:translate-x-2 sm:group-hover:opacity-100 sm:group-hover:translate-x-0 opacity-100 translate-x-0`}>
             {!persona.isActive && (
               <button 
                 onClick={(e) => { e.stopPropagation(); handleActivate(persona.id) }}
@@ -1032,7 +1040,7 @@ function MyPersonasModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     
     return (
       <div 
-        className={`group flex items-center gap-6 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer bg-[#0d0718] ${
+        className={`group flex items-center gap-6 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer bg-white/[0.03] ${
           persona.isActive 
             ? 'border-emerald-500/60 bg-emerald-500/5' 
             : 'border-white/20 hover:border-white/50 hover:bg-white/5'
@@ -1041,7 +1049,7 @@ function MyPersonasModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
         onMouseLeave={() => setHoveredPersona(null)}
         onClick={() => !persona.isActive && handleActivate(persona.id)}
       >
-        <Avatar className={`w-16 h-16 border-3 ${persona.isActive ? 'border-emerald-500/50' : 'border-white/20'}`}>
+        <Avatar className={`w-16 h-16 border-2 ${persona.isActive ? 'border-emerald-500/50' : 'border-white/20'}`}>
           <AvatarImage src={persona.avatarUrl || undefined} />
           <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-700 text-white text-xl font-semibold">
             {persona.name.charAt(0)}
@@ -1080,7 +1088,7 @@ function MyPersonasModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
           )}
         </div>
         
-        <div className={`flex items-center gap-2 transition-all duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`flex items-center gap-2 transition-all duration-200 sm:opacity-0 sm:group-hover:opacity-100 opacity-100`}>
           {!persona.isActive && (
             <button 
               onClick={(e) => { e.stopPropagation(); handleActivate(persona.id) }}
@@ -1322,6 +1330,20 @@ function MyPersonasModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
               </div>
             )}
           </div>
+        <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+          <AlertDialogContent className="bg-[#0c0c0c] border border-white/20">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">Delete Character</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400">
+                Are you sure you want to delete this persona? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-white/10 text-white border-white/20 hover:bg-white/20">Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmDelete} className="bg-red-600 text-white hover:bg-red-700">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         </DialogContent>
       </Dialog>
       
@@ -1452,8 +1474,8 @@ function ChatView({ conversation, onBack, onViewProfile }: { conversation: Conve
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (!file.type.startsWith('image/')) { alert('Please select an image file'); return }
-    if (file.size > 5 * 1024 * 1024) { alert('Image must be less than 5MB'); return }
+    if (!file.type.startsWith('image/')) { toast({ title: 'Error', description: 'Please select an image file', variant: 'destructive' }); return }
+    if (file.size > 5 * 1024 * 1024) { toast({ title: 'Error', description: 'Image must be less than 5MB', variant: 'destructive' }); return }
     
     setIsUploadingImage(true)
     try {
@@ -1463,10 +1485,10 @@ function ChatView({ conversation, onBack, onViewProfile }: { conversation: Conve
       if (response.ok) {
         const data = await response.json()
         setImagePreview(data.avatarUrl || data.url)
-      } else { alert('Failed to upload image') }
+      } else { toast({ title: 'Error', description: 'Failed to upload image', variant: 'destructive' }) }
     } catch (error) {
       console.error('Image upload error:', error)
-      alert('Failed to upload image')
+      toast({ title: 'Error', description: 'Failed to upload image', variant: 'destructive' })
     } finally {
       setIsUploadingImage(false)
     }
@@ -1734,7 +1756,7 @@ function ChatView({ conversation, onBack, onViewProfile }: { conversation: Conve
   }
   
   return (
-    <div className="flex flex-col h-full w-full min-h-0 bg-gradient-to-b from-[#090517] via-[#120a24] to-[#100827]">
+    <div className="flex flex-col h-full w-full min-h-0 bg-gradient-to-b from-black via-[#0a0a0a] to-[#050505]">
       {/* Chat Header */}
       <div className="flex items-center gap-3 p-4 border-b border-white/15 bg-black/50 backdrop-blur-sm sticky top-0 z-10">
         <Button variant="ghost" onClick={onBack} className="text-gray-300 hover:text-white hover:bg-white/10 gap-2 rounded-lg">
@@ -1747,7 +1769,7 @@ function ChatView({ conversation, onBack, onViewProfile }: { conversation: Conve
             <AvatarImage src={conversation.otherPersona.avatarUrl || undefined} />
             <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-700 text-white font-semibold">{conversation.otherPersona.name.charAt(0)}</AvatarFallback>
           </Avatar>
-          <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#12091f] ${conversation.otherPersona.isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`} />
+          <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${conversation.otherPersona.isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`} />
         </div>
         <div className="flex-1">
           <h3 className="font-medium text-white">{conversation.otherPersona.name}</h3>
@@ -1957,7 +1979,7 @@ function ChatView({ conversation, onBack, onViewProfile }: { conversation: Conve
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
                       <MessageCircle className="w-6 h-6 text-white" />
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#12091f] flex items-center justify-center">
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-black flex items-center justify-center">
                       <Check className="w-2.5 h-2.5 text-white" />
                     </div>
                   </div>
@@ -2298,396 +2320,7 @@ export function DmRequestDialog({
 }
 
 // ==================== HOME PAGE (Discovery) ====================
-function HomePageContent({ onStartChat }: { onStartChat: (conv: Conversation) => void }) {
-  const { user } = useAuth()
-  const { personas, activePersona, isLoading: personasLoading, createPersona } = usePersonas()
-  const { toast } = useToast()
-  const [activeFilter, setActiveFilter] = useState('new')
-  const [showOffline, setShowOffline] = useState(false)
-  const [showPersonasModal, setShowPersonasModal] = useState(false)
-  const [showCreatePersonaModal, setShowCreatePersonaModal] = useState(false)
-  const [showCreateScenarioModal, setShowCreateScenarioModal] = useState(false)
-  const [onlinePersonas, setOnlinePersonas] = useState<OnlinePersona[]>([])
-  const [conversations, setConversations] = useState<Conversation[]>([])
-  const [isLoadingDiscovery, setIsLoadingDiscovery] = useState(true)
-  const [isLoadingConversations, setIsLoadingConversations] = useState(true)
-  const [selectedPersona, setSelectedPersona] = useState<OnlinePersona | null>(null)
-  
-  // Search filters state
-  const [searchFilters, setSearchFilters] = useState<{
-    query: string
-    searchIn: string[]
-    mbti: string[]
-    gender: string[]
-    ageMin: number | null
-    ageMax: number | null
-    species: string[]
-    archetype: string[]
-    tags: string[]
-    attributes: string[]
-    likes: string[]
-    hobbies: string[]
-    skills: string[]
-    syncPersonality: boolean
-  }>({
-    query: '',
-    searchIn: ['all'],
-    mbti: [],
-    gender: [],
-    ageMin: null,
-    ageMax: null,
-    species: [],
-    archetype: [],
-    tags: [],
-    attributes: [],
-    likes: [],
-    hobbies: [],
-    skills: [],
-    syncPersonality: false
-  })
-  
-  // DM Request Dialog state
-  const [showDmRequestDialog, setShowDmRequestDialog] = useState(false)
-  const [dmRequestTarget, setDmRequestTarget] = useState<{ id: string; name: string; username: string } | null>(null)
-  
-  // Build search URL with filters
-  const buildSearchUrl = useCallback(() => {
-    const params = new URLSearchParams()
-    params.set('filter', activeFilter)
-    params.set('showOffline', showOffline.toString())
-    
-    if (searchFilters.query) params.set('q', searchFilters.query)
-    if (searchFilters.searchIn.length > 0 && !searchFilters.searchIn.includes('all')) {
-      params.set('searchIn', searchFilters.searchIn.join(','))
-    }
-    if (searchFilters.mbti.length > 0) params.set('mbti', searchFilters.mbti.join(','))
-    if (searchFilters.gender.length > 0) params.set('gender', searchFilters.gender.join(','))
-    if (searchFilters.ageMin !== null) params.set('ageMin', searchFilters.ageMin.toString())
-    if (searchFilters.ageMax !== null) params.set('ageMax', searchFilters.ageMax.toString())
-    if (searchFilters.species.length > 0) params.set('species', searchFilters.species.join(','))
-    if (searchFilters.archetype.length > 0) params.set('archetype', searchFilters.archetype.join(','))
-    if (searchFilters.tags.length > 0) params.set('tags', searchFilters.tags.join(','))
-    if (searchFilters.attributes.length > 0) params.set('attributes', searchFilters.attributes.join(','))
-    if (searchFilters.likes.length > 0) params.set('likes', searchFilters.likes.join(','))
-    if (searchFilters.hobbies.length > 0) params.set('hobbies', searchFilters.hobbies.join(','))
-    if (searchFilters.skills.length > 0) params.set('skills', searchFilters.skills.join(','))
-    if (searchFilters.syncPersonality) params.set('syncPersonality', 'true')
-    
-    return `/api/discovery?${params.toString()}`
-  }, [activeFilter, showOffline, searchFilters])
-  
-  useEffect(() => {
-    async function fetchDiscovery() {
-      setIsLoadingDiscovery(true)
-      try {
-        const response = await apiFetch(buildSearchUrl())
-        if (response.ok) {
-          const data = await response.json()
-          setOnlinePersonas(data.personas)
-        }
-      } catch (error) {
-        console.error('Failed to fetch discovery:', error)
-      } finally {
-        setIsLoadingDiscovery(false)
-      }
-    }
-    fetchDiscovery()
-  }, [buildSearchUrl])
-  
-  useEffect(() => {
-    async function fetchConversations() {
-      try {
-        const response = await fetch('/api/conversations')
-        if (response.ok) {
-          const data = await response.json()
-          setConversations(data.conversations)
-        }
-      } catch (error) {
-        console.error('Failed to fetch conversations:', error)
-      } finally {
-        setIsLoadingConversations(false)
-      }
-    }
-    if (personas.length > 0) fetchConversations()
-  }, [personas.length])
-  
-  const startConversation = async (targetPersonaId: string) => {
-    if (!activePersona) {
-      toast({ title: 'No Active Character', description: 'Please create and activate a character first!', variant: 'destructive' })
-      return
-    }
-    try {
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetPersonaId, myPersonaId: activePersona.id })
-      })
-      const data = await response.json()
-      
-      if (response.ok) {
-        // Check if we need to show DM request dialog
-        if (data.needsDmRequest && data.targetPersona) {
-          setDmRequestTarget(data.targetPersona)
-          setShowDmRequestDialog(true)
-          return
-        }
-        
-        // Check if conversation was created
-        if (data.conversation) {
-          const convResponse = await fetch('/api/conversations')
-          if (convResponse.ok) {
-            const convData = await convResponse.json()
-            setConversations(convData.conversations)
-            const newConv = convData.conversations.find((c: Conversation) => c.id === data.conversation.id)
-            if (newConv) {
-              onStartChat(newConv)
-              // Refresh DM sidebar
-              window.dispatchEvent(new CustomEvent(DM_REFRESH_EVENT))
-            }
-          }
-        } else if (data.dmRequest) {
-          // DM request was sent successfully
-          toast({ title: 'Request sent!', description: 'Your message request has been sent', variant: 'default' })
-        }
-      } else {
-        toast({ title: 'Failed to Start Conversation', description: data.error || 'Something went wrong', variant: 'destructive' })
-      }
-    } catch (error) {
-      console.error('Failed to start conversation:', error)
-      toast({ title: 'Failed to Start Conversation', description: 'Network error. Please try again.', variant: 'destructive' })
-    }
-  }
-  
-  // Handle successful DM request (when conversation is created)
-  const handleDmRequestSuccess = async (conversationId: string) => {
-    setShowDmRequestDialog(false)
-    setDmRequestTarget(null)
-    const convResponse = await fetch('/api/conversations')
-    if (convResponse.ok) {
-      const convData = await convResponse.json()
-      setConversations(convData.conversations)
-      const newConv = convData.conversations.find((c: Conversation) => c.id === conversationId)
-      if (newConv) {
-        onStartChat(newConv)
-        // Refresh DM sidebar
-        window.dispatchEvent(new CustomEvent(DM_REFRESH_EVENT))
-      }
-    }
-  }
-  
-  const handleSavePersona = async (data: {
-    name: string
-    title: string[]
-    avatarUrl: string | null
-    bannerUrl: string | null
-    description: string | null
-    archetype: string | null
-    gender: string | null
-    pronouns: string | null
-    age: number | null
-    tags: string[]
-    personalityDescription: string | null
-    personalitySpectrums: PersonalitySpectrums
-    bigFive: BigFiveTraits
-    hexaco: HexacoTraits
-    strengths: string[]
-    flaws: string[]
-    values: string[]
-    fears: string[]
-    species: string | null
-    likes: string[]
-    dislikes: string[]
-    hobbies: string[]
-    skills: string[]
-    languages: string[]
-    habits: string[]
-    speechPatterns: string[]
-    backstory: string | null
-    appearance: string | null
-    mbtiType: string | null
-    themeEnabled: boolean
-    rpStyle: string | null
-    rpPreferredGenders: string[]
-    rpGenres: string[]
-    rpLimits: string[]
-    rpThemes: string[]
-    rpExperienceLevel: string | null
-    rpResponseTime: string | null
-    nsfwEnabled: boolean
-    nsfwBodyType: string | null
-    nsfwKinks: string[]
-    nsfwContentWarnings: string[]
-    nsfwOrientation: string | null
-    nsfwRolePreference: string | null
-    characterQuote: string | null
-    psychologySurface: string | null
-    psychologyBeneath: string | null
-    occupation: string | null
-    status: string | null
-    orientation: string | null
-    height: string | null
-    dialogueLog: { type: string; content: string; mood?: string }[]
-    characterScenarios: { title: string; description: string }[]
-    galleryUrls: string[]
-    alternateImageUrl: string | null
-    connections?: { characterName: string; relationshipType: string; specificRole: string | null; characterAge: number | null; description: string | null }[]
-  }) => {
-    try {
-      await createPersona(data)
-      setShowCreatePersonaModal(false)
-    } catch (error) {
-      console.error('Failed to create persona:', error)
-      // Re-throw so PersonaForm can show the error
-      throw error
-    }
-  }
-  
-  return (
-    <div className="flex flex-col h-full persona-bg">
-      {/* Header */}
-      <div className="h-14 border-b border-white/20 flex items-center px-4 bg-black/60 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-            <Users className="w-4 h-4 text-black" />
-          </div>
-          <span className="text-lg font-bold persona-gradient-text">Discover</span>
-        </div>
-        <div className="ml-auto flex gap-2">
-          <button onClick={() => setShowPersonasModal(true)} className="btn-persona flex items-center gap-2 text-sm py-2 px-3">
-            <User className="w-4 h-4" /> My Characters
-          </button>
-        </div>
-      </div>
-      
-      <ScrollArea className="flex-1 min-h-0 p-4">
-        {/* No Persona Warning */}
-        {!personasLoading && personas.length === 0 && (
-          <div className="persona-card mb-4 p-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-white">Create Your First Character</h3>
-                <p className="text-sm text-gray-400/70">You need a character to start chatting with others!</p>
-              </div>
-              <button onClick={() => setShowCreatePersonaModal(true)} className="btn-persona flex items-center gap-2 py-2 px-4">
-                <Plus className="w-4 h-4" /> Create Character
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {/* Advanced Search */}
-        <div className="mb-4">
-          <AdvancedSearch 
-            onSearch={(filters) => setSearchFilters(filters)}
-            isLoading={isLoadingDiscovery}
-          />
-        </div>
-        
-        {/* Filter Tabs */}
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <div className="persona-tabs inline-flex p-1">
-            {['new', 'following', 'followers'].map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`persona-tab ${activeFilter === filter ? 'persona-tab-active' : ''}`}
-              >
-                {filter.charAt(0).toUpperCase() + filter.slice(1)}
-              </button>
-            ))}
-          </div>
-          
-          {/* Show Offline Toggle */}
-          <button
-            onClick={() => setShowOffline(!showOffline)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              showOffline 
-                ? 'bg-white/10 border border-white/20 text-gray-200' 
-                : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20'
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${showOffline ? 'bg-gray-400' : 'bg-emerald-400 animate-pulse'}`} />
-            {showOffline ? 'All Users' : 'Online Only'}
-          </button>
-        </div>
-        
-        <p className="text-xs text-gray-400/60 mb-3 flex items-center gap-2">
-          <span className={`w-1.5 h-1.5 rounded-full ${showOffline ? 'bg-gray-400' : 'bg-emerald-400 animate-pulse'}`} />
-          <span>{showOffline ? 'Showing all personas' : 'Showing online personas'}</span>
-        </p>
-        
-        {/* Discovery Grid */}
-        {isLoadingDiscovery ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="persona-card overflow-hidden">
-                <div className="h-20 bg-white/5" />
-                <div className="relative -mt-8 px-3">
-                  <div className="w-12 h-12 rounded-full bg-white/10 border-2 border-black skeleton-avatar persona-skeleton" />
-                </div>
-                <div className="px-3 pb-3 pt-1">
-                  <div className="h-3 persona-skeleton skeleton-text w-2/3 rounded" />
-                  <div className="h-2 persona-skeleton skeleton-text w-1/2 rounded mt-2" />
-                  <div className="flex gap-1.5 mt-2">
-                    <div className="h-6 persona-skeleton rounded flex-1" />
-                    <div className="h-6 persona-skeleton rounded flex-1" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : onlinePersonas.length === 0 ? (
-          <div className="persona-empty-state persona-card py-12 mt-2">
-            <div className="persona-empty-state-icon">
-              <Users className="w-8 h-8" />
-            </div>
-            <p className="text-gray-200">No personas found</p>
-            <p className="text-gray-500 text-sm mt-1">Try adjusting your filters</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {onlinePersonas.map((persona) => (
-              <PersonaCard
-                key={persona.id}
-                persona={persona}
-                onStartChat={startConversation}
-                onViewProfile={setSelectedPersona}
-              />
-            ))}
-          </div>
-        )}
-      </ScrollArea>
-      
-      <MyPersonasModal isOpen={showPersonasModal} onClose={() => setShowPersonasModal(false)} />
-      <PersonaForm isOpen={showCreatePersonaModal} onClose={() => setShowCreatePersonaModal(false)} onSave={handleSavePersona} isAdult={user?.isAdult ?? false} />
-      
-      {/* Character Profile Modal */}
-      {selectedPersona && (
-        <CharacterProfileModal
-          persona={selectedPersona}
-          isOpen={!!selectedPersona}
-          onClose={() => setSelectedPersona(null)}
-          onStartChat={(personaId) => {
-            startConversation(personaId)
-            setSelectedPersona(null)
-          }}
-        />
-      )}
-      
-      {/* DM Request Dialog */}
-      <DmRequestDialog
-        isOpen={showDmRequestDialog}
-        onClose={() => { setShowDmRequestDialog(false); setDmRequestTarget(null) }}
-        targetPersona={dmRequestTarget}
-        myPersona={activePersona}
-        onSuccess={handleDmRequestSuccess}
-      />
-    </div>
-  )
-}
+// HomePageContent removed - was dead code. MainApp uses DiscoverPage component directly.
 
 // ==================== MAIN APP ====================
 function MainApp() {

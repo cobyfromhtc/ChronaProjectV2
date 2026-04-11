@@ -118,7 +118,7 @@ export function ListOnMarketplaceModal({ isOpen, onClose, persona, onSuccess }: 
   
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden bg-[#12091f] border-white/15 flex flex-col">
+      <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden bg-black/50 border-white/15 flex flex-col">
         {/* Header */}
         <DialogHeader className="p-6 pb-4 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-4">
@@ -276,7 +276,7 @@ export function ListOnMarketplaceModal({ isOpen, onClose, persona, onSuccess }: 
         
         {/* Footer - Fixed at bottom */}
         {!success && (
-          <div className="p-6 pt-4 flex gap-3 border-t border-white/10 flex-shrink-0 bg-[#12091f]">
+          <div className="p-6 pt-4 flex gap-3 border-t border-white/10 flex-shrink-0 bg-black/50">
             <Button
               variant="outline"
               onClick={handleClose}

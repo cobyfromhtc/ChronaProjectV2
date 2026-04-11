@@ -12,6 +12,8 @@ import {
   Check, Sparkles, Heart, Send, Loader2, UserX, Mail
 } from 'lucide-react'
 import { DM_REFRESH_EVENT } from '@/components/dm-sidebar'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import { useToast } from '@/hooks/use-toast'
 
 interface Conversation {
   id: string
@@ -133,6 +135,8 @@ export function FriendsPage({ onStartChat }: FriendsPageProps) {
   const [hasSearched, setHasSearched] = useState(false)
   const [actioningRequestId, setActioningRequestId] = useState<string | null>(null)
   const [actioningDmRequestId, setActioningDmRequestId] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<{type: string, id: string, message: string} | null>(null)
+  const { toast } = useToast()
   
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
@@ -395,20 +399,37 @@ export function FriendsPage({ onStartChat }: FriendsPageProps) {
   
   // Remove friend
   const handleRemove = async (friendId: string) => {
-    if (!confirm('Are you sure you want to remove this friend?')) return
-    
+    setConfirmAction({ type: 'remove', id: friendId, message: 'Are you sure you want to remove this friend?' })
+  }
+
+  // Block user
+  const handleBlock = async (userId: string) => {
+    setConfirmAction({ type: 'block', id: userId, message: 'Are you sure you want to block this user? They will not be able to message you.' })
+  }
+
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return
+    const { type, id } = confirmAction
+    setConfirmAction(null)
+
     try {
-      const response = await fetch('/api/friends/remove', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ friendId })
-      })
-      
-      if (response.ok) {
-        fetchData()
+      if (type === 'remove') {
+        const response = await fetch('/api/friends/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ friendId: id })
+        })
+        if (response.ok) fetchData()
+      } else if (type === 'block') {
+        const response = await fetch('/api/friends/block', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: id })
+        })
+        if (response.ok) fetchData()
       }
     } catch (error) {
-      console.error('Failed to remove friend:', error)
+      console.error(`Failed to ${type}:`, error)
     }
   }
   
@@ -429,24 +450,7 @@ export function FriendsPage({ onStartChat }: FriendsPageProps) {
     }
   }
   
-  // Block user
-  const handleBlock = async (userId: string) => {
-    if (!confirm('Are you sure you want to block this user? They will not be able to message you.')) return
-    
-    try {
-      const response = await fetch('/api/friends/block', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      })
-      
-      if (response.ok) {
-        fetchData()
-      }
-    } catch (error) {
-      console.error('Failed to block user:', error)
-    }
-  }
+
   
   // Unblock user
   const handleUnblock = async (userId: string) => {
@@ -1099,6 +1103,20 @@ export function FriendsPage({ onStartChat }: FriendsPageProps) {
           )}
         </div>
       </ScrollArea>
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+        <AlertDialogContent className="bg-[#0c0c0c] border border-white/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">{confirmAction?.type === 'block' ? 'Block User' : 'Remove Friend'}</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              {confirmAction?.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/10 text-white border-white/20 hover:bg-white/20">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeConfirmAction} className={confirmAction?.type === 'block' ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-amber-600 text-white hover:bg-amber-700'}>{confirmAction?.type === 'block' ? 'Block' : 'Remove'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

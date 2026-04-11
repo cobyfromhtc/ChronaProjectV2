@@ -10,6 +10,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useAuth } from '@/hooks/use-auth'
 import { apiFetch } from '@/lib/api-client'
 import { CTagModal } from '@/components/ctag-modal'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import { useToast } from '@/hooks/use-toast'
 import { 
   Shield, Users, Crown, Coins, Flag, TrendingUp, Search, 
   Loader2, ChevronLeft, ChevronRight, UserPlus, UserMinus,
@@ -149,6 +151,8 @@ export function AdminPanel() {
   
   // CTag Modal
   const [ctagModalOpen, setCtagModalOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<{type: string, data: Record<string, string>, message: string} | null>(null)
+  const { toast } = useToast()
   const [ctagModalData, setCtagModalData] = useState<{
     user: { id: string; username: string; avatarUrl: string | null; role: string } | null
     activePersona: { id: string; name: string; avatarUrl: string | null; isActive: boolean; customTag: string | null } | null
@@ -240,24 +244,53 @@ export function AdminPanel() {
   
   // Change user role
   const changeUserRole = async (userId: string, newRole: string) => {
-    if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return
-    
+    setConfirmAction({ type: 'changeRole', data: { userId, newRole }, message: `Are you sure you want to change this user's role to ${newRole}?` })
+  }
+
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return
+    const { type, data } = confirmAction
+    setConfirmAction(null)
+
     try {
-      const response = await apiFetch('/api/admin/users', {
-        method: 'PATCH',
-        body: JSON.stringify({ userId, role: newRole })
-      })
-      
-      if (response.ok) {
-        fetchUsers()
-        fetchStats()
-      } else {
-        const data = await response.json()
-        alert(data.error || 'Failed to update role')
+      if (type === 'changeRole') {
+        const response = await apiFetch('/api/admin/users', {
+          method: 'PATCH',
+          body: JSON.stringify({ userId: data.userId, role: data.newRole })
+        })
+        if (response.ok) {
+          fetchUsers()
+          fetchStats()
+          toast({ title: 'Success', description: `Role changed to ${data.newRole}` })
+        } else {
+          const resp = await response.json()
+          toast({ title: 'Error', description: resp.error || 'Failed to update role', variant: 'destructive' })
+        }
+      } else if (type === 'resetChronos') {
+        setIsResettingChronos(true)
+        const response = await apiFetch('/api/admin/chronos', {
+          method: 'POST',
+          body: JSON.stringify({
+            targetUserId: data.userId,
+            amount: 0,
+            reason: data.reason,
+            reset: true
+          })
+        })
+        if (response.ok) {
+          setResetChronosForm({ userId: '', reason: '' })
+          fetchTransactions()
+          fetchStats()
+          toast({ title: 'Success', description: 'Chronos reset to 0 successfully!' })
+        } else {
+          const resp = await response.json()
+          toast({ title: 'Error', description: resp.error || 'Failed to reset Chronos', variant: 'destructive' })
+        }
+        setIsResettingChronos(false)
       }
     } catch (error) {
-      console.error('Error changing role:', error)
-      alert('Failed to update role')
+      console.error(`Error executing ${type}:`, error)
+      toast({ title: 'Error', description: `Failed to execute action`, variant: 'destructive' })
     }
   }
   
@@ -280,14 +313,14 @@ export function AdminPanel() {
         setChronoForm({ userId: '', amount: '', reason: '' })
         fetchTransactions()
         fetchStats()
-        alert('Chronos modified successfully!')
+        toast({ title: 'Success', description: 'Chronos modified successfully!' })
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to modify Chronos')
+        toast({ title: 'Error', description: data.error || 'Failed to modify Chronos', variant: 'destructive' })
       }
     } catch (error) {
       console.error('Error modifying Chronos:', error)
-      alert('Failed to modify Chronos')
+      toast({ title: 'Error', description: 'Failed to modify Chronos', variant: 'destructive' })
     } finally {
       setIsSubmittingChronos(false)
     }
@@ -296,36 +329,7 @@ export function AdminPanel() {
   // Reset Chronos to 0
   const resetChronos = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!confirm('Are you sure you want to reset this user\'s Chronos to 0? This cannot be undone.')) return
-    
-    setIsResettingChronos(true)
-    
-    try {
-      const response = await apiFetch('/api/admin/chronos', {
-        method: 'POST',
-        body: JSON.stringify({
-          targetUserId: resetChronosForm.userId,
-          amount: 0, // Will be handled specially
-          reason: resetChronosForm.reason,
-          reset: true
-        })
-      })
-      
-      if (response.ok) {
-        setResetChronosForm({ userId: '', reason: '' })
-        fetchTransactions()
-        fetchStats()
-        alert('Chronos reset to 0 successfully!')
-      } else {
-        const data = await response.json()
-        alert(data.error || 'Failed to reset Chronos')
-      }
-    } catch (error) {
-      console.error('Error resetting Chronos:', error)
-      alert('Failed to reset Chronos')
-    } finally {
-      setIsResettingChronos(false)
-    }
+    setConfirmAction({ type: 'resetChronos', data: { userId: resetChronosForm.userId, reason: resetChronosForm.reason }, message: "Are you sure you want to reset this user's Chronos to 0? This cannot be undone." })
   }
   
   // Update report status
@@ -349,11 +353,11 @@ export function AdminPanel() {
         fetchStats()
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to update report')
+        toast({ title: 'Error', description: data.error || 'Failed to update report', variant: 'destructive' })
       }
     } catch (error) {
       console.error('Error updating report:', error)
-      alert('Failed to update report')
+      toast({ title: 'Error', description: 'Failed to update report', variant: 'destructive' })
     }
   }
   
@@ -654,7 +658,7 @@ export function AdminPanel() {
           {/* Users Tab */}
           <TabsContent value="users" className="flex-1 overflow-y-auto p-6">
             {/* Search and Filters */}
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-4 mb-6 flex-wrap">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400/60" />
                 <Input
@@ -1520,6 +1524,21 @@ export function AdminPanel() {
         personas={ctagModalData.personas}
         onSuccess={handleCTagSuccess}
       />
+
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+        <AlertDialogContent className="bg-[#0c0c0c] border border-white/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">{confirmAction?.type === 'resetChronos' ? 'Reset Chronos' : 'Confirm Action'}</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              {confirmAction?.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/10 text-white border-white/20 hover:bg-white/20">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeConfirmAction} className={confirmAction?.type === 'resetChronos' ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-amber-600 text-white hover:bg-amber-700'}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

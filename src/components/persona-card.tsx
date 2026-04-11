@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { MessageSquare, User, Sparkles, Crown, Heart, Zap, Star, Eye, Globe, Shield } from 'lucide-react'
+import { MessageSquare, Eye } from 'lucide-react'
+import { getArchetypeIconConfig, ARCHETYPE_DEFAULT } from '@/lib/archetype-config'
 
 interface PersonaConnectionData {
   id: string
@@ -73,57 +74,16 @@ interface PersonaCardProps {
   onViewProfile: (persona: any) => void
 }
 
-// Archetype icons and colors - full set matching PERSONA_ARCHETYPES
-const archetypeConfig: Record<string, { icon: any; color: string; gradient: string; bg: string }> = {
-  // New behaviour-based archetypes
-  'Morally Grey': { icon: Globe, color: 'text-gray-300', gradient: 'from-gray-500 to-zinc-500', bg: 'from-gray-500/30 to-zinc-500/20' },
-  'Dominant': { icon: Crown, color: 'text-purple-300', gradient: 'from-purple-600 to-violet-600', bg: 'from-purple-600/30 to-violet-600/20' },
-  'Protective': { icon: Shield, color: 'text-blue-300', gradient: 'from-blue-500 to-sky-500', bg: 'from-blue-500/30 to-sky-500/20' },
-  'Cold & Distant': { icon: Eye, color: 'text-sky-300', gradient: 'from-sky-400 to-cyan-400', bg: 'from-sky-400/30 to-cyan-400/20' },
-  'Obsessive': { icon: Zap, color: 'text-red-300', gradient: 'from-red-600 to-rose-700', bg: 'from-red-600/30 to-rose-700/20' },
-  'Brooding': { icon: Globe, color: 'text-slate-300', gradient: 'from-slate-600 to-gray-700', bg: 'from-slate-600/30 to-gray-700/20' },
-  'Flirtatious': { icon: Heart, color: 'text-pink-300', gradient: 'from-pink-400 to-rose-400', bg: 'from-pink-400/30 to-rose-400/20' },
-  'Tsundere': { icon: Zap, color: 'text-orange-300', gradient: 'from-orange-400 to-amber-400', bg: 'from-orange-400/30 to-amber-400/20' },
-  'Yandere': { icon: Zap, color: 'text-red-400', gradient: 'from-red-700 to-rose-800', bg: 'from-red-700/30 to-rose-800/20' },
-  'Kuudere': { icon: Eye, color: 'text-cyan-300', gradient: 'from-cyan-400 to-sky-400', bg: 'from-cyan-400/30 to-sky-400/20' },
-  'Mysterious': { icon: Globe, color: 'text-violet-300', gradient: 'from-violet-500 to-purple-600', bg: 'from-violet-500/30 to-purple-600/20' },
-  'Wholesome': { icon: Star, color: 'text-yellow-300', gradient: 'from-yellow-400 to-amber-300', bg: 'from-yellow-400/30 to-amber-300/20' },
-  'Chaotic': { icon: Zap, color: 'text-amber-300', gradient: 'from-amber-500 to-orange-500', bg: 'from-amber-500/30 to-orange-500/20' },
-  'Defiant': { icon: Zap, color: 'text-orange-400', gradient: 'from-orange-600 to-red-500', bg: 'from-orange-600/30 to-red-500/20' },
-  'Possessive': { icon: Heart, color: 'text-rose-300', gradient: 'from-rose-500 to-red-500', bg: 'from-rose-500/30 to-red-500/20' },
-  'Devoted': { icon: Heart, color: 'text-amber-200', gradient: 'from-amber-300 to-yellow-200', bg: 'from-amber-300/30 to-yellow-200/20' },
-  'Dark & Gritty': { icon: Globe, color: 'text-gray-400', gradient: 'from-gray-800 to-zinc-800', bg: 'from-gray-800/30 to-zinc-800/20' },
-  'Supernatural': { icon: Sparkles, color: 'text-indigo-300', gradient: 'from-indigo-500 to-violet-600', bg: 'from-indigo-500/30 to-violet-600/20' },
-  'Royalty': { icon: Crown, color: 'text-yellow-400', gradient: 'from-yellow-500 to-amber-500', bg: 'from-yellow-500/30 to-amber-500/20' },
-  'Warrior': { icon: Zap, color: 'text-red-300', gradient: 'from-red-500 to-orange-600', bg: 'from-red-500/30 to-orange-600/20' },
-  'Scholar': { icon: Eye, color: 'text-indigo-300', gradient: 'from-indigo-400 to-blue-500', bg: 'from-indigo-400/30 to-blue-500/20' },
-  'Trauma-Coded': { icon: Heart, color: 'text-rose-200', gradient: 'from-rose-300 to-pink-400', bg: 'from-rose-300/30 to-pink-400/20' },
-  'Protector': { icon: Shield, color: 'text-blue-400', gradient: 'from-blue-400 to-indigo-400', bg: 'from-blue-400/30 to-indigo-400/20' },
-  'Street-Smart': { icon: Globe, color: 'text-zinc-300', gradient: 'from-zinc-500 to-gray-600', bg: 'from-zinc-500/30 to-gray-600/20' },
-  // Classic archetypes (kept for backward compatibility)
-  'Trickster': { icon: Sparkles, color: 'text-amber-400', gradient: 'from-amber-500 to-violet-500', bg: 'from-amber-500/30 to-violet-500/20' },
-  'Rebel': { icon: Zap, color: 'text-orange-400', gradient: 'from-red-600 to-orange-600', bg: 'from-red-600/30 to-orange-600/20' },
-  'Sage': { icon: Eye, color: 'text-indigo-400', gradient: 'from-violet-500 to-gray-500', bg: 'from-violet-500/30 to-gray-500/20' },
-  'Lover': { icon: Heart, color: 'text-pink-400', gradient: 'from-pink-500 to-rose-500', bg: 'from-pink-500/30 to-rose-500/20' },
-  'Villain': { icon: Zap, color: 'text-red-400', gradient: 'from-red-500 to-rose-500', bg: 'from-red-500/30 to-rose-500/20' },
-  'Hero': { icon: Crown, color: 'text-blue-400', gradient: 'from-amber-500 to-orange-500', bg: 'from-amber-500/30 to-orange-500/20' },
-  'Antihero': { icon: Globe, color: 'text-gray-400', gradient: 'from-gray-500 to-slate-500', bg: 'from-gray-500/30 to-slate-500/20' },
-  'Caregiver': { icon: Heart, color: 'text-rose-400', gradient: 'from-teal-500 to-cyan-500', bg: 'from-teal-500/30 to-cyan-500/20' },
-  'Explorer': { icon: Eye, color: 'text-emerald-400', gradient: 'from-emerald-500 to-teal-500', bg: 'from-emerald-500/30 to-teal-500/20' },
-  'Creator': { icon: Sparkles, color: 'text-cyan-400', gradient: 'from-indigo-500 to-gray-500', bg: 'from-indigo-500/30 to-gray-500/20' },
-  'Ruler': { icon: Crown, color: 'text-yellow-400', gradient: 'from-yellow-500 to-amber-500', bg: 'from-yellow-500/30 to-amber-500/20' },
-  'Other': { icon: User, color: 'text-gray-400', gradient: 'from-gray-500 to-gray-400', bg: 'from-gray-500/10 to-gray-400/10' },
-  'default': { icon: User, color: 'text-white', gradient: 'from-gray-500 to-gray-400', bg: 'from-gray-500/10 to-gray-400/10' },
-}
+// Uses centralized archetype config from @/lib/archetype-config
 
 export function PersonaCard({ persona, onStartChat, onViewProfile }: PersonaCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [bannerLoaded, setBannerLoaded] = useState(false)
   
-  const config = archetypeConfig[persona.archetype || 'default'] || archetypeConfig['default']
+  const config = getArchetypeIconConfig(persona.archetype)
   const ArchetypeIcon = config.icon
-  const secondaryConfig = persona.secondaryArchetype ? (archetypeConfig[persona.secondaryArchetype] || archetypeConfig['default']) : null
+  const secondaryConfig = persona.secondaryArchetype ? getArchetypeIconConfig(persona.secondaryArchetype) : null
   const SecondaryIcon = secondaryConfig?.icon
   
   // Get personality indicator (MBTI or simplified)
@@ -169,7 +129,7 @@ export function PersonaCard({ persona, onStartChat, onViewProfile }: PersonaCard
           <div className="relative h-24">
             {persona.bannerUrl ? (
               <>
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#12091f] z-10" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black z-10" />
                 <img
                   src={persona.bannerUrl}
                   alt=""
@@ -198,7 +158,7 @@ export function PersonaCard({ persona, onStartChat, onViewProfile }: PersonaCard
           <div className="absolute top-[72px] left-3 z-30">
             <div className={`relative transition-transform duration-300 ${isHovered ? 'scale-105' : ''}`}>
               {/* Solid background to prevent any bleeding */}
-              <div className="absolute inset-0 rounded-full bg-[#12091f] scale-110" />
+              <div className="absolute inset-0 rounded-full bg-black scale-110" />
               
               {/* Outer ring */}
               <div className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-br ${
@@ -206,11 +166,11 @@ export function PersonaCard({ persona, onStartChat, onViewProfile }: PersonaCard
                   ? 'from-emerald-400 via-white to-gray-300'
                   : 'from-gray-500/50 via-gray-400/50 to-gray-500/50'
               } transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-70'}`}>
-                <div className="w-full h-full rounded-full bg-[#12091f]" />
+                <div className="w-full h-full rounded-full bg-black" />
               </div>
 
               {/* Avatar - 56px (w-14 h-14) - with solid border to prevent bleeding */}
-              <Avatar className="w-14 h-14 border-[3px] border-[#12091f] relative z-10">
+              <Avatar className="w-14 h-14 border-[3px] border-black relative z-10">
                 <AvatarImage
                   src={persona.avatarUrl || undefined}
                   className={`transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -225,14 +185,14 @@ export function PersonaCard({ persona, onStartChat, onViewProfile }: PersonaCard
               <div className="absolute -bottom-1.5 -right-1.5 z-20 flex items-center">
                 {persona.archetype && (
                   <div className="w-5 h-5 rounded-full flex items-center justify-center relative">
-                    <div className="absolute inset-0 rounded-full bg-[#12091f]" />
+                    <div className="absolute inset-0 rounded-full bg-black" />
                     <div className={`absolute inset-[3px] rounded-full bg-gradient-to-br ${config.gradient}`} />
                     <ArchetypeIcon className="w-2.5 h-2.5 text-white relative z-10" />
                   </div>
                 )}
                 {persona.secondaryArchetype && SecondaryIcon && (
                   <div className="w-4 h-4 rounded-full flex items-center justify-center relative -ml-1.5 -mb-0.5">
-                    <div className="absolute inset-0 rounded-full bg-[#12091f]" />
+                    <div className="absolute inset-0 rounded-full bg-black" />
                     <div className={`absolute inset-[2px] rounded-full bg-gradient-to-br ${secondaryConfig!.gradient} opacity-80`} />
                     <SecondaryIcon className="w-2 h-2 text-white relative z-10" />
                   </div>

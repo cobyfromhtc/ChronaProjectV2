@@ -20,52 +20,12 @@ interface PersonaDnaSigilProps {
   showLabel?: boolean
 }
 
-// ─── Archetype → Color Map ───────────────────────────────────────────────────
+// ─── Archetype → Color Map (centralized) ─────────────────────────────────────
 
-const ARCHETYPE_COLORS: Record<string, string> = {
-  'Morally Grey': '#9ca3af',
-  'Dominant': '#a78bfa',
-  'Protective': '#60a5fa',
-  'Cold & Distant': '#38bdf8',
-  'Obsessive': '#f87171',
-  'Brooding': '#94a3b8',
-  'Flirtatious': '#f472b6',
-  'Tsundere': '#fb923c',
-  'Yandere': '#dc2626',
-  'Kuudere': '#22d3ee',
-  'Mysterious': '#8b5cf6',
-  'Wholesome': '#fbbf24',
-  'Chaotic': '#f59e0b',
-  'Defiant': '#ea580c',
-  'Possessive': '#fb7185',
-  'Devoted': '#d97706',
-  'Dark & Gritty': '#6b7280',
-  'Supernatural': '#818cf8',
-  'Royalty': '#eab308',
-  'Warrior': '#ef4444',
-  'Scholar': '#818cf8',
-  'Trauma-Coded': '#fda4af',
-  'Protector': '#60a5fa',
-  'Street-Smart': '#a1a1aa',
-  'Trickster': '#f59e0b',
-  'Rebel': '#f97316',
-  'Sage': '#a78bfa',
-  'Lover': '#ec4899',
-  'Villain': '#ef4444',
-  'Hero': '#3b82f6',
-  'Antihero': '#9ca3af',
-  'Caregiver': '#f472b6',
-  'Explorer': '#34d399',
-  'Creator': '#22d3ee',
-  'Ruler': '#eab308',
-  'Other': '#9ca3af',
-}
-
-const DEFAULT_COLOR = '#6b7280'
+import { getArchetypeHexColor, ARCHETYPE_DEFAULT_HEX } from '@/lib/archetype-config'
 
 function getArchetypeColor(archetype: string | null | undefined): string {
-  if (!archetype) return DEFAULT_COLOR
-  return ARCHETYPE_COLORS[archetype] ?? DEFAULT_COLOR
+  return getArchetypeHexColor(archetype)
 }
 
 // ─── Deterministic Hash ──────────────────────────────────────────────────────

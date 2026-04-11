@@ -2,10 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Heart, X, Check, Sparkles, Loader2, Users, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -43,6 +39,7 @@ export function PartnerMatching({ personaId, personaName }: PartnerMatchingProps
   const [loading, setLoading] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [processing, setProcessing] = useState(false)
+  const [mutualMatchMsg, setMutualMatchMsg] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) {
@@ -69,6 +66,7 @@ export function PartnerMatching({ personaId, personaName }: PartnerMatchingProps
     if (!match) return
 
     setProcessing(true)
+    setMutualMatchMsg(null)
     try {
       const res = await fetch(`/api/partner-matching/${match.id}`, {
         method: 'PATCH',
@@ -81,8 +79,7 @@ export function PartnerMatching({ personaId, personaName }: PartnerMatchingProps
       const data = await res.json()
 
       if (data.isMutualMatch) {
-        // Show match notification!
-        alert(`🎉 It's a match! You and ${match.name} both liked each other!`)
+        setMutualMatchMsg(`It's a match! You and ${match.name} both liked each other!`)
       }
 
       setCurrentIndex(currentIndex + 1)
@@ -94,10 +91,10 @@ export function PartnerMatching({ personaId, personaName }: PartnerMatchingProps
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500'
-    if (score >= 60) return 'text-yellow-500'
-    if (score >= 40) return 'text-orange-500'
-    return 'text-red-500'
+    if (score >= 80) return 'text-green-400'
+    if (score >= 60) return 'text-yellow-400'
+    if (score >= 40) return 'text-orange-400'
+    return 'text-red-400'
   }
 
   const getScoreGradient = (score: number) => {
@@ -111,58 +108,67 @@ export function PartnerMatching({ personaId, personaName }: PartnerMatchingProps
 
   return (
     <>
-      <Button 
-        variant="outline" 
-        className="w-full gap-2"
+      <button 
+        className="btn-persona-secondary w-full gap-2 inline-flex items-center justify-center"
         onClick={() => setOpen(true)}
       >
         <Heart className="w-4 h-4" />
         Find Partners
-      </Button>
+      </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-[#0a0a0a] border border-white/10 text-white">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Sparkles className="w-5 h-5 text-white/80" />
               Partner Matching for {personaName}
             </DialogTitle>
           </DialogHeader>
 
           <div className="py-4">
+            {/* Mutual match message */}
+            {mutualMatchMsg && (
+              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
+                <p className="text-green-400 text-sm font-medium">🎉 {mutualMatchMsg}</p>
+              </div>
+            )}
+
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <Loader2 className="w-8 h-8 animate-spin text-white/60" />
               </div>
             ) : !currentMatch ? (
               <div className="text-center py-12">
-                <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="font-semibold mb-2">No more matches</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <Users className="w-12 h-12 mx-auto mb-4 text-white/20" />
+                <h3 className="font-semibold text-white/90 mb-2">No more matches</h3>
+                <p className="text-sm text-white/50 mb-4">
                   Check back later for new potential partners!
                 </p>
-                <Button variant="outline" onClick={loadMatches}>
+                <button
+                  className="btn-persona-secondary text-sm"
+                  onClick={loadMatches}
+                >
                   Refresh Matches
-                </Button>
+                </button>
               </div>
             ) : (
               <div className="space-y-4">
                 {/* Match Card */}
-                <Card className="overflow-hidden">
+                <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
                   <div className={cn(
                     "h-2 bg-gradient-to-r",
                     getScoreGradient(currentMatch.compatibilityScore)
                   )} />
-                  <CardContent className="p-4">
+                  <div className="p-4">
                     <div className="flex items-start gap-4">
                       <Avatar className="w-16 h-16">
                         <AvatarImage src={currentMatch.avatarUrl || undefined} />
-                        <AvatarFallback>{currentMatch.name[0]}</AvatarFallback>
+                        <AvatarFallback className="bg-white/10 text-white/60">{currentMatch.name[0]}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{currentMatch.name}</h3>
+                        <h3 className="font-semibold text-white/90 truncate">{currentMatch.name}</h3>
                         {currentMatch.user && (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-white/50">
                             by @{currentMatch.user.username}
                           </p>
                         )}
@@ -170,25 +176,33 @@ export function PartnerMatching({ personaId, personaName }: PartnerMatchingProps
                           <span className={cn("text-lg font-bold", getScoreColor(currentMatch.compatibilityScore))}>
                             {currentMatch.compatibilityScore}%
                           </span>
-                          <span className="text-sm text-muted-foreground">compatible</span>
+                          <span className="text-sm text-white/50">compatible</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Compatibility Progress */}
                     <div className="mt-4">
-                      <Progress value={currentMatch.compatibilityScore} className="h-2" />
+                      <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div 
+                          className={cn(
+                            "h-full rounded-full bg-gradient-to-r transition-all duration-500",
+                            getScoreGradient(currentMatch.compatibilityScore)
+                          )}
+                          style={{ width: `${currentMatch.compatibilityScore}%` }}
+                        />
+                      </div>
                     </div>
 
                     {/* Match Reasons */}
                     {currentMatch.matchReasons.length > 0 && (
                       <div className="mt-4">
-                        <p className="text-sm font-medium mb-2">Why you match:</p>
+                        <p className="text-sm font-medium text-white/70 mb-2">Why you match:</p>
                         <div className="flex flex-wrap gap-1">
                           {currentMatch.matchReasons.map((reason, i) => (
-                            <Badge key={i} variant="secondary" className="text-xs">
+                            <span key={i} className="bg-white/5 text-white/60 border border-white/10 text-xs px-2 py-0.5 rounded-full">
                               {reason}
-                            </Badge>
+                            </span>
                           ))}
                         </div>
                       </div>
@@ -196,52 +210,49 @@ export function PartnerMatching({ personaId, personaName }: PartnerMatchingProps
 
                     {/* RP Info */}
                     {(currentMatch.rpStyle || currentMatch.rpGenres) && (
-                      <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                      <div className="mt-4 p-3 bg-white/[0.03] border border-white/5 rounded-lg">
                         {currentMatch.rpStyle && (
-                          <p className="text-sm">
-                            <span className="font-medium">Style:</span>{' '}
+                          <p className="text-sm text-white/70">
+                            <span className="font-medium text-white/80">Style:</span>{' '}
                             {currentMatch.rpStyle.replace('_', ' ')}
                           </p>
                         )}
                         {currentMatch.rpGenres && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {JSON.parse(currentMatch.rpGenres).slice(0, 4).map((genre: string, i: number) => (
-                              <Badge key={i} variant="outline" className="text-xs">
+                              <span key={i} className="bg-white/5 text-white/60 border border-white/10 text-xs px-2 py-0.5 rounded-full">
                                 {genre}
-                              </Badge>
+                              </span>
                             ))}
                           </div>
                         )}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* Actions */}
                 <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="flex-1 gap-2"
+                  <button
+                    className="flex-1 gap-2 btn-persona-secondary inline-flex items-center justify-center py-3"
                     onClick={() => handleAction('passed')}
                     disabled={processing}
                   >
                     <X className="w-5 h-5" />
                     Pass
-                  </Button>
-                  <Button
-                    size="lg"
-                    className="flex-1 gap-2"
+                  </button>
+                  <button
+                    className="flex-1 gap-2 btn-persona inline-flex items-center justify-center py-3"
                     onClick={() => handleAction('liked')}
                     disabled={processing}
                   >
                     <Heart className="w-5 h-5" />
                     Like
-                  </Button>
+                  </button>
                 </div>
 
                 {/* Progress indicator */}
-                <p className="text-center text-sm text-muted-foreground">
+                <p className="text-center text-sm text-white/40">
                   {currentIndex + 1} of {matches.length}
                 </p>
               </div>

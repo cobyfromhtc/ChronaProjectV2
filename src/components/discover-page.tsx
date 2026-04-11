@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { apiFetch } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
+import { PersonaCard } from '@/components/persona-card'
+import { getArchetypeGradientColor } from '@/lib/archetype-config'
 import { 
   Search, TrendingUp, Clock, Star, Users, Sparkles, 
   Flame, Crown, Heart, ChevronRight, Filter, Grid3X3, List,
@@ -116,47 +118,6 @@ interface DiscoverPageProps {
 // Section type
 type SectionType = 'all' | 'trending' | 'partners' | 'storylines' | 'scenarios'
 
-// Archetype colors
-const ARCHETYPE_COLORS: Record<string, string> = {
-  // New behaviour-based archetypes
-  'Morally Grey': 'from-gray-500/20 to-zinc-500/20 border-gray-500/30',
-  'Dominant': 'from-purple-600/20 to-violet-600/20 border-purple-500/30',
-  'Protective': 'from-blue-500/20 to-sky-500/20 border-blue-500/30',
-  'Cold & Distant': 'from-sky-400/20 to-cyan-400/20 border-sky-400/30',
-  'Obsessive': 'from-red-600/20 to-rose-700/20 border-red-600/30',
-  'Brooding': 'from-slate-600/20 to-gray-700/20 border-slate-500/30',
-  'Flirtatious': 'from-pink-400/20 to-rose-400/20 border-pink-400/30',
-  'Tsundere': 'from-orange-400/20 to-amber-400/20 border-orange-400/30',
-  'Yandere': 'from-red-700/20 to-rose-800/20 border-red-700/30',
-  'Kuudere': 'from-cyan-400/20 to-sky-400/20 border-cyan-400/30',
-  'Mysterious': 'from-violet-500/20 to-purple-600/20 border-violet-500/30',
-  'Wholesome': 'from-yellow-400/20 to-amber-300/20 border-yellow-400/30',
-  'Chaotic': 'from-amber-500/20 to-orange-500/20 border-amber-500/30',
-  'Defiant': 'from-orange-600/20 to-red-500/20 border-orange-600/30',
-  'Possessive': 'from-rose-500/20 to-red-500/20 border-rose-500/30',
-  'Devoted': 'from-amber-300/20 to-yellow-200/20 border-amber-300/30',
-  'Dark & Gritty': 'from-gray-800/20 to-zinc-800/20 border-gray-700/30',
-  'Supernatural': 'from-indigo-500/20 to-violet-600/20 border-indigo-500/30',
-  'Royalty': 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30',
-  'Warrior': 'from-red-500/20 to-orange-600/20 border-red-500/30',
-  'Scholar': 'from-indigo-400/20 to-blue-500/20 border-indigo-400/30',
-  'Trauma-Coded': 'from-rose-300/20 to-pink-400/20 border-rose-300/30',
-  'Protector': 'from-blue-400/20 to-indigo-400/20 border-blue-400/30',
-  'Street-Smart': 'from-zinc-500/20 to-gray-600/20 border-zinc-500/30',
-  // Classic archetypes (kept for backward compatibility)
-  'Hero': 'from-amber-500/20 to-orange-500/20 border-amber-500/30',
-  'Villain': 'from-red-500/20 to-rose-500/20 border-red-500/30',
-  'Antihero': 'from-gray-500/20 to-slate-500/20 border-gray-500/30',
-  'Trickster': 'from-gray-500/20 to-violet-500/20 border-white/20',
-  'Lover': 'from-pink-500/20 to-rose-500/20 border-pink-500/30',
-  'Rebel': 'from-red-600/20 to-orange-600/20 border-red-600/30',
-  'Creator': 'from-indigo-500/20 to-gray-500/20 border-white/20',
-  'Caregiver': 'from-teal-500/20 to-cyan-500/20 border-teal-500/30',
-  'Explorer': 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30',
-  'Sage': 'from-violet-500/20 to-gray-500/20 border-white/20',
-  'Ruler': 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30',
-}
-
 // Category colors for storylines
 const CATEGORY_COLORS: Record<string, string> = {
   'Romance': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
@@ -184,7 +145,7 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
   const [searchQuery, setSearchQuery] = useState('')
   const [activeSection, setActiveSection] = useState<SectionType>('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+
   const [ageRangeInfo, setAgeRangeInfo] = useState<{ min: number; max: number | null } | null>(null)
 
   // Fetch all data
@@ -256,11 +217,6 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
     return storylines.filter(s => !s.isJoined).slice(0, 6)
   }, [storylines])
 
-  // Get archetype color
-  const getArchetypeColor = (archetype: string | null) => {
-    if (!archetype) return 'from-white/10 to-white/5 border-white/10'
-    return ARCHETYPE_COLORS[archetype] || 'from-white/10 to-white/5 border-white/10'
-  }
 
   // Get category color
   const getCategoryColor = (category: string) => {
@@ -452,15 +408,20 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
                           : "grid-cols-1"
                       )}>
                         {trendingPersonas.slice(0, 4).map((persona) => (
-                          <PersonaCard
-                            key={persona.id}
-                            persona={persona}
-                            viewMode={viewMode}
-                            isHovered={hoveredItem === persona.id}
-                            onHover={setHoveredItem}
-                            onSelect={() => onSelectPersona?.(persona)}
-                            archetypeColor={getArchetypeColor(persona.archetype)}
-                          />
+                          viewMode === 'list' ? (
+                            <PersonaListItem
+                              key={persona.id}
+                              persona={persona}
+                              onSelect={() => onSelectPersona?.(persona)}
+                            />
+                          ) : (
+                            <PersonaCard
+                              key={persona.id}
+                              persona={persona}
+                              onStartChat={() => {}}
+                              onViewProfile={() => onSelectPersona?.(persona)}
+                            />
+                          )
                         ))}
                       </div>
                     </Section>
@@ -528,15 +489,20 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
                     : "grid-cols-1"
                 )}>
                   {trendingPersonas.map((persona) => (
-                    <PersonaCard
-                      key={persona.id}
-                      persona={persona}
-                      viewMode={viewMode}
-                      isHovered={hoveredItem === persona.id}
-                      onHover={setHoveredItem}
-                      onSelect={() => onSelectPersona?.(persona)}
-                      archetypeColor={getArchetypeColor(persona.archetype)}
-                    />
+                    viewMode === 'list' ? (
+                      <PersonaListItem
+                        key={persona.id}
+                        persona={persona}
+                        onSelect={() => onSelectPersona?.(persona)}
+                      />
+                    ) : (
+                      <PersonaCard
+                        key={persona.id}
+                        persona={persona}
+                        onStartChat={() => {}}
+                        onViewProfile={() => onSelectPersona?.(persona)}
+                      />
+                    )
                   ))}
                 </div>
               )}
@@ -752,153 +718,46 @@ function PartnerMatchCard({
   )
 }
 
-// Persona Card Component
-function PersonaCard({
+// Persona List Item Component (for list view mode - shared PersonaCard only supports grid)
+function PersonaListItem({
   persona,
-  viewMode,
-  isHovered,
-  onHover,
-  onSelect,
-  archetypeColor
+  onSelect
 }: {
   persona: OnlinePersona
-  viewMode: 'grid' | 'list'
-  isHovered: boolean
-  onHover: (id: string | null) => void
   onSelect: () => void
-  archetypeColor: string
 }) {
-  if (viewMode === 'list') {
-    return (
-      <button
-        onClick={onSelect}
-        onMouseEnter={() => onHover(persona.id)}
-        onMouseLeave={() => onHover(null)}
-        className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all text-left group"
-      >
-        <Avatar className="w-14 h-14 border border-white/10 flex-shrink-0">
-          <AvatarImage src={persona.avatarUrl || undefined} />
-          <AvatarFallback className="bg-white/10 text-white font-semibold">
-            {persona.name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-white truncate">{persona.name}</h3>
-            {persona.isOnline && (
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            )}
-          </div>
-          <p className="text-sm text-white/40 truncate">
-            @{persona.username} {persona.archetype && `• ${persona.archetype}`}
-          </p>
-          {persona.bio && (
-            <p className="text-xs text-white/30 line-clamp-1 mt-1">{persona.bio}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {persona.mbtiType && (
-            <span className="px-2 py-1 rounded-md text-xs font-medium bg-white/5 text-white/60 border border-white/10">
-              {persona.mbtiType}
-            </span>
-          )}
-          <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
-        </div>
-      </button>
-    )
-  }
-
   return (
     <button
       onClick={onSelect}
-      onMouseEnter={() => onHover(persona.id)}
-      onMouseLeave={() => onHover(null)}
-      className={cn(
-        "group relative rounded-2xl overflow-hidden transition-all duration-300 text-left",
-        "bg-gradient-to-br",
-        archetypeColor,
-        "border hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20"
-      )}
+      className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all text-left group"
     >
-      {/* Banner */}
-      <div className="h-28 relative overflow-hidden">
-        {persona.bannerUrl ? (
-          <img 
-            src={persona.bannerUrl} 
-            alt="" 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        
-        {/* Online indicator */}
-        {persona.isOnline && (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] font-medium text-emerald-300">Online</span>
-          </div>
-        )}
-      </div>
-      
-      {/* Avatar */}
-      <div className="relative -mt-10 px-4">
-        <Avatar className="w-16 h-16 border-4 border-black/90 shadow-lg">
-          <AvatarImage src={persona.avatarUrl || undefined} />
-          <AvatarFallback className="bg-white/10 text-white font-bold text-lg">
-            {persona.name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      </div>
-      
-      {/* Content */}
-      <div className="p-4 pt-3">
-        <div className="flex items-start justify-between gap-2 mb-1">
+      <Avatar className="w-14 h-14 border border-white/10 flex-shrink-0">
+        <AvatarImage src={persona.avatarUrl || undefined} />
+        <AvatarFallback className="bg-white/10 text-white font-semibold">
+          {persona.name.charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
           <h3 className="font-semibold text-white truncate">{persona.name}</h3>
-          {persona.mbtiType && (
-            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-white/10 text-white/60 border border-white/10 flex-shrink-0">
-              {persona.mbtiType}
-            </span>
+          {persona.isOnline && (
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
           )}
         </div>
-        <p className="text-xs text-white/40 mb-2">@{persona.username}</p>
-        
+        <p className="text-sm text-white/40 truncate">
+          @{persona.username} {persona.archetype && `• ${persona.archetype}`}
+        </p>
         {persona.bio && (
-          <p className="text-sm text-white/50 line-clamp-2 leading-relaxed mb-3">{persona.bio}</p>
+          <p className="text-xs text-white/30 line-clamp-1 mt-1">{persona.bio}</p>
         )}
-        
-        {/* Tags */}
-        {persona.tags && persona.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {persona.tags.slice(0, 3).map((tag, i) => (
-              <span 
-                key={i} 
-                className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 text-white/50 border border-white/10"
-              >
-                {tag}
-              </span>
-            ))}
-            {persona.tags.length > 3 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 text-white/40 border border-white/10">
-                +{persona.tags.length - 3}
-              </span>
-            )}
-          </div>
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {persona.mbtiType && (
+          <span className="px-2 py-1 rounded-md text-xs font-medium bg-white/5 text-white/60 border border-white/10">
+            {persona.mbtiType}
+          </span>
         )}
-        
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
-          <div className="flex items-center gap-3 text-xs text-white/30">
-            {persona.archetype && (
-              <span className="flex items-center gap-1">
-                <Crown className="w-3 h-3" />
-                {persona.archetype}
-              </span>
-            )}
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/50 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-        </div>
+        <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
       </div>
     </button>
   )

@@ -297,7 +297,7 @@ export function Sidebar({
           <div className="flex items-center gap-3">
             <div className="relative">
               <img 
-                src="/logo.png" 
+                src="/logo.svg" 
                 alt="Chrona" 
                 className="relative w-10 h-10 rounded-xl object-cover"
               />
@@ -424,7 +424,7 @@ export function Sidebar({
             </button>
           </div>
           
-          <div className="px-3 h-40">
+          <div className="px-3 h-56">
             <ScrollArea className="h-full">
               <div className="space-y-1 pr-2">
                 {personas.length === 0 ? (

@@ -80,3 +80,61 @@ Stage Summary:
 - Mood Board is now 100% free, instant, and works offline (no AI, no API keys, no network requests)
 - DNA Sigil + Mood Board both integrated into persona creation preview
 - All 3 features (Dual Archetype, DNA Sigil, Mood Board) are completely free to implement and use
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix dark theme consistency in scenarios-page.tsx and partner-matching.tsx
+
+Work Log:
+- Read globals.css to understand the dark theme design system (persona-bg, persona-card, persona-tabs, persona-tab, persona-tab-active, btn-persona, btn-persona-secondary, persona-input, persona-badge, etc.)
+- Read scenarios-page.tsx - identified light theme styling (default Card, Badge, Tabs/TabsList/TabsTrigger, Button, Input components with default shadcn/ui styling)
+- Read partner-matching.tsx - identified light theme styling (default Card, CardContent, Badge, Button, Dialog, Progress components) and alert() call on mutual match
+
+### scenarios-page.tsx changes:
+- Added `persona-bg` class to main container div
+- Replaced `border-b` with `border-b border-white/10` on header
+- Replaced `text-primary` icon color with `text-white/80`
+- Replaced `text-xl font-bold` heading with `text-xl font-bold text-white`
+- Replaced `<Button>` with `<button className="btn-persona">` for Create Scenario
+- Replaced `<Input>` with dark styling: `bg-white/[0.03] border-white/10 text-white placeholder:text-white/30`
+- Replaced Search icon `text-muted-foreground` with `text-white/40`
+- Replaced `<Tabs>/<TabsList>/<TabsTrigger>` with `persona-tabs`/`persona-tab`/`persona-tab-active` classes
+- Replaced `<Card>` with `bg-white/[0.02] border border-white/10 rounded-xl` div
+- Replaced `<Badge variant="secondary">` with inline dark badge span
+- Replaced `bg-muted` with `bg-white/5`
+- Replaced `bg-gradient-to-br from-primary/20 to-primary/5` with `from-white/10 to-white/[0.02]`
+- Replaced `text-muted-foreground` with `text-white/50` throughout
+- Replaced `text-primary/30` icon with `text-white/20`
+- Replaced CardContent/CardFooter with plain divs with dark styling
+- Replaced AvatarFallback with `bg-white/10 text-white/60`
+- Removed unused imports: Button, Badge, Card, CardContent, CardFooter, Tabs, TabsContent, TabsList, TabsTrigger
+
+### partner-matching.tsx changes:
+- Replaced `<Button variant="outline">` trigger with `<button className="btn-persona-secondary">`
+- Replaced `<DialogContent>` with dark styling: `bg-[#0a0a0a] border border-white/10 text-white`
+- Replaced `<DialogTitle>` with `text-white`
+- Added `mutualMatchMsg` state to replace `alert()` call
+- Added green notification banner for mutual match display
+- Replaced `<Card>` with `bg-white/[0.02] border border-white/10 rounded-xl` div
+- Replaced `<CardContent>` with plain div
+- Replaced `<Badge variant="secondary">` with `bg-white/5 text-white/60 border border-white/10` span
+- Replaced `<Badge variant="outline">` with same dark badge pattern
+- Replaced `<Progress>` with custom div-based progress bar using score gradient
+- Replaced `bg-muted/50` with `bg-white/[0.03] border border-white/5`
+- Replaced `<Button variant="outline">` (Pass) with `btn-persona-secondary`
+- Replaced `<Button>` (Like) with `btn-persona`
+- Replaced `text-muted-foreground` with `text-white/50` or `text-white/40`
+- Replaced `text-primary` with `text-white/80`
+- Replaced AvatarFallback with `bg-white/10 text-white/60`
+- Updated score colors to use 400 variants (green-400, yellow-400, etc.) for better dark theme visibility
+- Removed unused imports: Button, Badge, Card, CardContent, Progress
+
+- Lint passes cleanly with no errors
+- Dev server compiles successfully
+
+Stage Summary:
+- Both components now fully consistent with the app's pure black dark theme
+- All shadcn/ui default (light) styling replaced with persona design system classes
+- alert() in partner-matching.tsx replaced with state-based inline notification
+- Zero functional changes - all interactivity preserved
