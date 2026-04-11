@@ -138,3 +138,57 @@ Stage Summary:
 - All shadcn/ui default (light) styling replaced with persona design system classes
 - alert() in partner-matching.tsx replaced with state-based inline notification
 - Zero functional changes - all interactivity preserved
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Implement comprehensive Discover filter section with MBTI, Personality Spectrums, RP Style, Age Group enforcement
+
+Work Log:
+- Audited entire discover page and found AdvancedSearch component existed but was DEAD CODE (imported in page.tsx but never rendered)
+- Found /api/discovery backend already supported most filters but frontend didn't use them
+- Found personality spectrum filters (Introvert/Extrovert, etc.) didn't exist anywhere
+
+### advanced-search.tsx changes:
+- Added PersonalitySpectrumFilters interface with 5 spectrum range pairs
+- Added new SearchFilters fields: personalitySpectrums, rpStyle, rpExperienceLevel, lookingForPartner, onlineOnly
+- Added RP_STYLES constant (One-Liner, Semi-Lit, Literate, Novella)
+- Added RP_EXPERIENCE_LEVELS constant (Beginner, Intermediate, Advanced, Veteran)
+- Added PERSONALITY_SPECTRUMS config with 5 spectrums (Introvert/Extrovert, Intuitive/Observant, Thinking/Feeling, Judging/Prospecting, Assertive/Turbulent)
+- Added Personality Spectrums UI section with dual range sliders, quick presets (left/ambivert/right/any), toggle enable/disable
+- Added RP Style & Experience Level filter buttons
+- Added Quick Toggles row (Looking for Partner, Online Only)
+- Updated clearAllFilters, hasActiveFilters, activeFilterCount to include new fields
+- Added new lucide icons imports: ToggleLeft, Wifi, BookOpen, PenTool
+
+### discover-page.tsx changes:
+- Completely rewrote to integrate AdvancedSearch component
+- Replaced bare search bar with AdvancedSearch (search + filter panel)
+- Added handleSearch callback that builds URL params from SearchFilters and calls /api/discovery
+- Added 'search' SectionType for filtered results view
+- Added Search Results tab that appears when filters are active with result count badge
+- Added search results section with filter pills, loading state, empty state, grid/list view
+- Age gap filtering now applied to ALL discovery searches (not just partners section)
+- Added filteredPersonas state for search results
+- Added isSearching loading state
+
+### /api/discovery/route.ts changes:
+- Added personality spectrum range filter params: psIntroExtro, psIntuitObs, psThinkFeel, psJudgeProspect, psAssertTurb
+- Added parseRange helper for "min,max" format parsing
+- Added RP Style filter (rpStyle param)
+- Added RP Experience Level filter (rpExperienceLevel param)
+- Added Looking for Partner filter (lookingForPartner param)
+- Added personalitySpectrums post-query filtering (since stored as JSON in SQLite)
+- Added lookingForPartner, rpStyle, rpExperienceLevel to personaSelect
+- Added lookingForPartner, rpStyle, rpExperienceLevel to response transform
+- Updated searchMeta to include all new filter params
+
+### page.tsx changes:
+- Removed orphaned AdvancedSearch import (now used inside DiscoverPage directly)
+
+Stage Summary:
+- All user-requested filters now implemented: MBTI, Introvert/Extrovert, all 5 personality spectrums, Gender, Age Range, Species, Archetype, Tags, Attributes, Likes, Hobbies, Skills, RP Style, RP Experience, Looking for Partner, Online Only
+- AdvancedSearch component properly integrated into DiscoverPage with working search
+- Backend API supports all new filter parameters
+- Age gap filtering enforced on all discovery searches for safety
+- Lint passes cleanly, dev server running successfully

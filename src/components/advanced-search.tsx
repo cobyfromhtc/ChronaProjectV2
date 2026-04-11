@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { 
   Search, X, SlidersHorizontal, ChevronDown, ChevronUp, 
-  User, Brain, Heart, Sparkles, Hash, Calendar, Zap, Plus, Star
+  User, Brain, Heart, Sparkles, Hash, Calendar, Zap, Plus, Star,
+  ToggleLeft, Wifi, BookOpen, PenTool
 } from 'lucide-react'
 import { PERSONA_ARCHETYPES } from '@/lib/constants'
 
@@ -51,8 +52,41 @@ const PREDEFINED_TAGS = [
   'rebel', 'gentle', 'fierce', 'elegant', 'casual', 'dramatic'
 ]
 
+// RP Style options
+const RP_STYLES = [
+  { value: 'one_liner', label: 'One-Liner' },
+  { value: 'semi_lit', label: 'Semi-Lit' },
+  { value: 'literate', label: 'Literate' },
+  { value: 'novella', label: 'Novella' },
+]
+
+// RP Experience Level options
+const RP_EXPERIENCE_LEVELS = [
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
+  { value: 'veteran', label: 'Veteran' },
+]
+
+// Personality spectrum config
+const PERSONALITY_SPECTRUMS = [
+  { key: 'introvertExtrovert' as const, leftLabel: 'Introvert', rightLabel: 'Extrovert', leftIcon: '🤫', rightIcon: '🗣️' },
+  { key: 'intuitiveObservant' as const, leftLabel: 'Intuitive', rightLabel: 'Observant', leftIcon: '💭', rightIcon: '👁️' },
+  { key: 'thinkingFeeling' as const, leftLabel: 'Thinking', rightLabel: 'Feeling', leftIcon: '🧠', rightIcon: '💗' },
+  { key: 'judgingProspecting' as const, leftLabel: 'Judging', rightLabel: 'Prospecting', leftIcon: '📋', rightIcon: '🎲' },
+  { key: 'assertiveTurbulent' as const, leftLabel: 'Assertive', rightLabel: 'Turbulent', leftIcon: '💪', rightIcon: '🌪️' },
+]
+
 // LocalStorage key for custom tags
 const CUSTOM_TAGS_STORAGE_KEY = 'chrona-custom-tags'
+
+interface PersonalitySpectrumFilters {
+  introvertExtrovert: [number, number] // [min, max] 0-100
+  intuitiveObservant: [number, number]
+  thinkingFeeling: [number, number]
+  judgingProspecting: [number, number]
+  assertiveTurbulent: [number, number]
+}
 
 interface SearchFilters {
   query: string
@@ -69,6 +103,11 @@ interface SearchFilters {
   hobbies: string[]
   skills: string[]
   syncPersonality: boolean
+  personalitySpectrums: PersonalitySpectrumFilters | null
+  rpStyle: string[]
+  rpExperienceLevel: string[]
+  lookingForPartner: boolean | null
+  onlineOnly: boolean
 }
 
 interface AdvancedSearchProps {
@@ -92,7 +131,12 @@ export function AdvancedSearch({ onSearch, isLoading }: AdvancedSearchProps) {
     likes: [],
     hobbies: [],
     skills: [],
-    syncPersonality: false
+    syncPersonality: false,
+    personalitySpectrums: null,
+    rpStyle: [],
+    rpExperienceLevel: [],
+    lookingForPartner: null,
+    onlineOnly: false
   })
   
   // Tag input states
@@ -279,7 +323,12 @@ export function AdvancedSearch({ onSearch, isLoading }: AdvancedSearchProps) {
       likes: [],
       hobbies: [],
       skills: [],
-      syncPersonality: false
+      syncPersonality: false,
+      personalitySpectrums: null,
+      rpStyle: [],
+      rpExperienceLevel: [],
+      lookingForPartner: null,
+      onlineOnly: false
     })
     setTagInput('')
     setAttributeInput('')
@@ -300,7 +349,12 @@ export function AdvancedSearch({ onSearch, isLoading }: AdvancedSearchProps) {
     filters.attributes.length > 0 ||
     filters.likes.length > 0 ||
     filters.hobbies.length > 0 ||
-    filters.skills.length > 0
+    filters.skills.length > 0 ||
+    filters.personalitySpectrums !== null ||
+    filters.rpStyle.length > 0 ||
+    filters.rpExperienceLevel.length > 0 ||
+    filters.lookingForPartner !== null ||
+    filters.onlineOnly
   
   const activeFilterCount = 
     (filters.query ? 1 : 0) +
@@ -313,7 +367,12 @@ export function AdvancedSearch({ onSearch, isLoading }: AdvancedSearchProps) {
     filters.attributes.length +
     filters.likes.length +
     filters.hobbies.length +
-    filters.skills.length
+    filters.skills.length +
+    (filters.personalitySpectrums !== null ? 1 : 0) +
+    filters.rpStyle.length +
+    filters.rpExperienceLevel.length +
+    (filters.lookingForPartner !== null ? 1 : 0) +
+    (filters.onlineOnly ? 1 : 0)
 
   // Filter available tags based on input
   const filteredAvailableTags = tagInput 
@@ -842,6 +901,249 @@ export function AdvancedSearch({ onSearch, isLoading }: AdvancedSearchProps) {
                 ))}
               </div>
             </div>
+          </div>
+          
+          {/* Personality Spectrums */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-medium text-gray-300 flex items-center gap-1.5">
+                <Brain className="w-3.5 h-3.5" />
+                Personality Spectrums
+              </label>
+              {filters.personalitySpectrums && (
+                <button
+                  onClick={() => updateFilter('personalitySpectrums', null)}
+                  className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+            
+            {/* Toggle to enable spectrum filters */}
+            <div className="mb-3">
+              <button
+                onClick={() => updateFilter('personalitySpectrums', filters.personalitySpectrums ? null : {
+                  introvertExtrovert: [0, 100] as [number, number],
+                  intuitiveObservant: [0, 100] as [number, number],
+                  thinkingFeeling: [0, 100] as [number, number],
+                  judgingProspecting: [0, 100] as [number, number],
+                  assertiveTurbulent: [0, 100] as [number, number],
+                })}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all ${
+                  filters.personalitySpectrums
+                    ? 'bg-violet-500/20 text-violet-200 border border-violet-500/30'
+                    : 'bg-white/5 text-gray-400 border border-white/15 hover:border-white/20'
+                }`}
+              >
+                <ToggleLeft className="w-3.5 h-3.5" />
+                {filters.personalitySpectrums ? 'Spectrum filters active' : 'Enable spectrum filters'}
+              </button>
+            </div>
+            
+            {filters.personalitySpectrums && (
+              <div className="space-y-3 p-3 rounded-lg bg-white/[0.02] border border-white/10">
+                {PERSONALITY_SPECTRUMS.map(spectrum => {
+                  const [min, max] = filters.personalitySpectrums![spectrum.key]
+                  return (
+                    <div key={spectrum.key} className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                          {spectrum.leftIcon} {spectrum.leftLabel}
+                        </span>
+                        <span className="text-[10px] text-white/50 font-mono">
+                          {min} - {max}
+                        </span>
+                        <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                          {spectrum.rightLabel} {spectrum.rightIcon}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={min}
+                          onChange={(e) => {
+                            const newMin = parseInt(e.target.value)
+                            if (newMin <= max) {
+                              setFilters(prev => ({
+                                ...prev,
+                                personalitySpectrums: {
+                                  ...prev.personalitySpectrums!,
+                                  [spectrum.key]: [newMin, max] as [number, number]
+                                }
+                              }))
+                            }
+                          }}
+                          className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-violet-400"
+                        />
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={max}
+                          onChange={(e) => {
+                            const newMax = parseInt(e.target.value)
+                            if (newMax >= min) {
+                              setFilters(prev => ({
+                                ...prev,
+                                personalitySpectrums: {
+                                  ...prev.personalitySpectrums!,
+                                  [spectrum.key]: [min, newMax] as [number, number]
+                                }
+                              }))
+                            }
+                          }}
+                          className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-violet-400"
+                        />
+                      </div>
+                      {/* Quick preset buttons */}
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => setFilters(prev => ({
+                            ...prev,
+                            personalitySpectrums: {
+                              ...prev.personalitySpectrums!,
+                              [spectrum.key]: [0, 30] as [number, number]
+                            }
+                          }))}
+                          className={`px-1.5 py-0.5 rounded text-[9px] transition-all ${
+                            min === 0 && max === 30
+                              ? 'bg-white/15 text-white border border-white/25'
+                              : 'bg-white/5 text-gray-500 hover:text-gray-300'
+                          }`}
+                        >
+                          {spectrum.leftLabel}
+                        </button>
+                        <button
+                          onClick={() => setFilters(prev => ({
+                            ...prev,
+                            personalitySpectrums: {
+                              ...prev.personalitySpectrums!,
+                              [spectrum.key]: [35, 65] as [number, number]
+                            }
+                          }))}
+                          className={`px-1.5 py-0.5 rounded text-[9px] transition-all ${
+                            min === 35 && max === 65
+                              ? 'bg-white/15 text-white border border-white/25'
+                              : 'bg-white/5 text-gray-500 hover:text-gray-300'
+                          }`}
+                        >
+                          Ambivert
+                        </button>
+                        <button
+                          onClick={() => setFilters(prev => ({
+                            ...prev,
+                            personalitySpectrums: {
+                              ...prev.personalitySpectrums!,
+                              [spectrum.key]: [70, 100] as [number, number]
+                            }
+                          }))}
+                          className={`px-1.5 py-0.5 rounded text-[9px] transition-all ${
+                            min === 70 && max === 100
+                              ? 'bg-white/15 text-white border border-white/25'
+                              : 'bg-white/5 text-gray-500 hover:text-gray-300'
+                          }`}
+                        >
+                          {spectrum.rightLabel}
+                        </button>
+                        <button
+                          onClick={() => setFilters(prev => ({
+                            ...prev,
+                            personalitySpectrums: {
+                              ...prev.personalitySpectrums!,
+                              [spectrum.key]: [0, 100] as [number, number]
+                            }
+                          }))}
+                          className={`px-1.5 py-0.5 rounded text-[9px] transition-all ${
+                            min === 0 && max === 100
+                              ? 'bg-white/15 text-white border border-white/25'
+                              : 'bg-white/5 text-gray-500 hover:text-gray-300'
+                          }`}
+                        >
+                          Any
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+          
+          {/* RP Style & Experience Level */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium text-gray-300 mb-2 flex items-center gap-1.5">
+                <PenTool className="w-3.5 h-3.5" />
+                RP Style
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {RP_STYLES.map(style => (
+                  <button
+                    key={style.value}
+                    onClick={() => toggleArrayFilter('rpStyle', style.value)}
+                    className={`px-2 py-1 rounded-lg text-xs transition-all ${
+                      filters.rpStyle.includes(style.value)
+                        ? 'bg-teal-500/30 text-teal-200 border border-teal-500/40'
+                        : 'bg-white/5 text-gray-400 border border-white/15 hover:border-white/20'
+                    }`}
+                  >
+                    {style.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-xs font-medium text-gray-300 mb-2 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5" />
+                RP Experience
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {RP_EXPERIENCE_LEVELS.map(level => (
+                  <button
+                    key={level.value}
+                    onClick={() => toggleArrayFilter('rpExperienceLevel', level.value)}
+                    className={`px-2 py-1 rounded-lg text-xs transition-all ${
+                      filters.rpExperienceLevel.includes(level.value)
+                        ? 'bg-orange-500/30 text-orange-200 border border-orange-500/40'
+                        : 'bg-white/5 text-gray-400 border border-white/15 hover:border-white/20'
+                    }`}
+                  >
+                    {level.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Quick Toggles Row */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => updateFilter('lookingForPartner', filters.lookingForPartner === true ? null : true)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all ${
+                filters.lookingForPartner === true
+                  ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30'
+                  : 'bg-white/5 text-gray-400 border border-white/15 hover:border-white/20'
+              }`}
+            >
+              <Heart className="w-3.5 h-3.5" />
+              Looking for Partner
+            </button>
+            
+            <button
+              onClick={() => updateFilter('onlineOnly', !filters.onlineOnly)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all ${
+                filters.onlineOnly
+                  ? 'bg-green-500/20 text-green-200 border border-green-500/30'
+                  : 'bg-white/5 text-gray-400 border border-white/15 hover:border-white/20'
+              }`}
+            >
+              <Wifi className="w-3.5 h-3.5" />
+              Online Only
+            </button>
           </div>
           
           {/* Clear Filters */}

@@ -57,6 +57,24 @@ export async function GET(request: NextRequest) {
     const skillsFilter = searchParams.get('skills')?.split(',').filter(Boolean) || []
     const syncPersonality = searchParams.get('syncPersonality') === 'true' // Sync MBTI with HEXACO/Big Five
     
+    // Personality spectrum range filters (format: "min,max" for each)
+    const parseRange = (val: string | null): [number, number] | null => {
+      if (!val) return null
+      const parts = val.split(',').map(Number)
+      if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return null
+      return [parts[0], parts[1]]
+    }
+    const psIntroExtro = parseRange(searchParams.get('psIntroExtro'))
+    const psIntuitObs = parseRange(searchParams.get('psIntuitObs'))
+    const psThinkFeel = parseRange(searchParams.get('psThinkFeel'))
+    const psJudgeProspect = parseRange(searchParams.get('psJudgeProspect'))
+    const psAssertTurb = parseRange(searchParams.get('psAssertTurb'))
+    
+    // RP preferences
+    const rpStyleFilter = searchParams.get('rpStyle')?.split(',').filter(Boolean) || []
+    const rpExperienceLevelFilter = searchParams.get('rpExperienceLevel')?.split(',').filter(Boolean) || []
+    const lookingForPartner = searchParams.get('lookingForPartner') === 'true'
+    
     // Get current user's active persona to exclude from results
     const currentUserPersonas = await db.persona.findMany({
       where: { userId: user.id },
@@ -104,6 +122,9 @@ export async function GET(request: NextRequest) {
       backstory: true,
       appearance: true,
       mbtiType: true,
+      lookingForPartner: true,
+      rpStyle: true,
+      rpExperienceLevel: true,
       isOnline: true,
       user: {
         select: { username: true, dateOfBirth: true }
@@ -287,6 +308,25 @@ export async function GET(request: NextRequest) {
         })
       }
       
+      // RP Style filter
+      if (rpStyleFilter.length > 0) {
+        conditions.push({
+          OR: rpStyleFilter.map(style => ({ rpStyle: { equals: style } }))
+        })
+      }
+      
+      // RP Experience Level filter
+      if (rpExperienceLevelFilter.length > 0) {
+        conditions.push({
+          OR: rpExperienceLevelFilter.map(level => ({ rpExperienceLevel: { equals: level } }))
+        })
+      }
+      
+      // Looking for Partner filter
+      if (lookingForPartner) {
+        conditions.push({ lookingForPartner: true })
+      }
+      
       return conditions
     }
     
@@ -376,6 +416,9 @@ export async function GET(request: NextRequest) {
       backstory: p.backstory,
       appearance: p.appearance,
       mbtiType: p.mbtiType,
+      lookingForPartner: p.lookingForPartner,
+      rpStyle: p.rpStyle,
+      rpExperienceLevel: p.rpExperienceLevel,
       // Connections
       connections: p.connections || [],
       // Owner age for age gap filtering (not exposed to frontend)
@@ -387,6 +430,38 @@ export async function GET(request: NextRequest) {
       result = result.filter(p => {
         if (p._ownerAge === null) return false
         return canChatWith(currentUserAge, p._ownerAge)
+      })
+    }
+    
+    // Apply personality spectrum range filtering (post-query since it's JSON)
+    const hasSpectrumFilters = psIntroExtro || psIntuitObs || psThinkFeel || psJudgeProspect || psAssertTurb
+    if (hasSpectrumFilters) {
+      result = result.filter(p => {
+        if (!p.personalitySpectrums) return false
+        const ps = p.personalitySpectrums as any
+        
+        if (psIntroExtro) {
+          const val = ps.introvertExtrovert ?? 50
+          if (val < psIntroExtro[0] || val > psIntroExtro[1]) return false
+        }
+        if (psIntuitObs) {
+          const val = ps.intuitiveObservant ?? 50
+          if (val < psIntuitObs[0] || val > psIntuitObs[1]) return false
+        }
+        if (psThinkFeel) {
+          const val = ps.thinkingFeeling ?? 50
+          if (val < psThinkFeel[0] || val > psThinkFeel[1]) return false
+        }
+        if (psJudgeProspect) {
+          const val = ps.judgingProspecting ?? 50
+          if (val < psJudgeProspect[0] || val > psJudgeProspect[1]) return false
+        }
+        if (psAssertTurb) {
+          const val = ps.assertiveTurbulent ?? 50
+          if (val < psAssertTurb[0] || val > psAssertTurb[1]) return false
+        }
+        
+        return true
       })
     }
     
@@ -413,6 +488,16 @@ export async function GET(request: NextRequest) {
           likes: likesFilter,
           hobbies: hobbiesFilter,
           skills: skillsFilter,
+          rpStyle: rpStyleFilter,
+          rpExperienceLevel: rpExperienceLevelFilter,
+          lookingForPartner,
+          personalitySpectrums: { 
+            introvertExtrovert: psIntroExtro, 
+            intuitiveObservant: psIntuitObs, 
+            thinkingFeeling: psThinkFeel, 
+            judgingProspecting: psJudgeProspect, 
+            assertiveTurbulent: psAssertTurb 
+          },
           syncPersonality,
           ageGap: applyAgeGap
         },

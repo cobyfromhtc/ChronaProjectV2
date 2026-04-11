@@ -1,19 +1,19 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { apiFetch } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import { PersonaCard } from '@/components/persona-card'
+import { AdvancedSearch, SearchFilters } from '@/components/advanced-search'
 import { getArchetypeGradientColor } from '@/lib/archetype-config'
 import { 
   Search, TrendingUp, Clock, Star, Users, Sparkles, 
   Flame, Crown, Heart, ChevronRight, Filter, Grid3X3, List,
   Sparkles as SparklesIcon, ArrowUpRight, User, MessageCircle,
-  BookOpen, Zap, Globe, Target, Compass
+  BookOpen, Zap, Globe, Target, Compass, SlidersHorizontal, X
 } from 'lucide-react'
 
 // Types
@@ -116,7 +116,7 @@ interface DiscoverPageProps {
 }
 
 // Section type
-type SectionType = 'all' | 'trending' | 'partners' | 'storylines' | 'scenarios'
+type SectionType = 'all' | 'trending' | 'partners' | 'storylines' | 'scenarios' | 'search'
 
 // Category colors for storylines
 const CATEGORY_COLORS: Record<string, string> = {
@@ -138,13 +138,15 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryline }: DiscoverPageProps) {
   const [personas, setPersonas] = useState<OnlinePersona[]>([])
+  const [filteredPersonas, setFilteredPersonas] = useState<OnlinePersona[]>([])
   const [ageGapPersonas, setAgeGapPersonas] = useState<OnlinePersona[]>([]) // Age-filtered for partner matching
   const [storylines, setStorylines] = useState<StorylineItem[]>([])
   const [scenarios, setScenarios] = useState<ScenarioItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
   const [activeSection, setActiveSection] = useState<SectionType>('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [currentFilters, setCurrentFilters] = useState<SearchFilters | null>(null)
 
   const [ageRangeInfo, setAgeRangeInfo] = useState<{ min: number; max: number | null } | null>(null)
 
@@ -154,7 +156,7 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
       setIsLoading(true)
       try {
         // Fetch personas (general discovery)
-        const personasRes = await apiFetch('/api/discovery')
+        const personasRes = await apiFetch('/api/discovery?showOffline=true')
         if (personasRes.ok) {
           const data = await personasRes.json()
           setPersonas(data.personas || [])
@@ -191,20 +193,129 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
     fetchData()
   }, [])
 
+  // Handle search from AdvancedSearch component - calls the API with all filter params
+  const handleSearch = useCallback(async (filters: SearchFilters) => {
+    setCurrentFilters(filters)
+    
+    // Check if we have any active filters beyond defaults
+    const hasActiveFilters = 
+      filters.query || 
+      filters.mbti.length > 0 || 
+      filters.gender.length > 0 || 
+      filters.ageMin !== null || 
+      filters.ageMax !== null ||
+      filters.species.length > 0 ||
+      filters.archetype.length > 0 ||
+      filters.tags.length > 0 ||
+      filters.attributes.length > 0 ||
+      filters.likes.length > 0 ||
+      filters.hobbies.length > 0 ||
+      filters.skills.length > 0 ||
+      filters.personalitySpectrums !== null ||
+      filters.rpStyle.length > 0 ||
+      filters.rpExperienceLevel.length > 0 ||
+      filters.lookingForPartner !== null ||
+      filters.onlineOnly
+    
+    if (!hasActiveFilters) {
+      // No filters active, reset to default discovery view
+      setFilteredPersonas([])
+      if (activeSection === 'search') setActiveSection('all')
+      return
+    }
+    
+    setIsSearching(true)
+    setActiveSection('search')
+    
+    try {
+      const params = new URLSearchParams()
+      
+      // Text search
+      if (filters.query) params.set('q', filters.query)
+      if (filters.searchIn.length > 0 && !filters.searchIn.includes('all')) {
+        params.set('searchIn', filters.searchIn.join(','))
+      }
+      
+      // MBTI
+      if (filters.mbti.length > 0) params.set('mbti', filters.mbti.join(','))
+      if (filters.syncPersonality) params.set('syncPersonality', 'true')
+      
+      // Gender
+      if (filters.gender.length > 0) params.set('gender', filters.gender.join(','))
+      
+      // Age range
+      if (filters.ageMin !== null) params.set('ageMin', String(filters.ageMin))
+      if (filters.ageMax !== null) params.set('ageMax', String(filters.ageMax))
+      
+      // Species
+      if (filters.species.length > 0) params.set('species', filters.species.join(','))
+      
+      // Archetype
+      if (filters.archetype.length > 0) params.set('archetype', filters.archetype.join(','))
+      
+      // Tags
+      if (filters.tags.length > 0) params.set('tags', filters.tags.join(','))
+      
+      // Attributes
+      if (filters.attributes.length > 0) params.set('attributes', filters.attributes.join(','))
+      
+      // Likes
+      if (filters.likes.length > 0) params.set('likes', filters.likes.join(','))
+      
+      // Hobbies
+      if (filters.hobbies.length > 0) params.set('hobbies', filters.hobbies.join(','))
+      
+      // Skills
+      if (filters.skills.length > 0) params.set('skills', filters.skills.join(','))
+      
+      // Personality spectrums
+      if (filters.personalitySpectrums) {
+        params.set('psIntroExtro', `${filters.personalitySpectrums.introvertExtrovert[0]},${filters.personalitySpectrums.introvertExtrovert[1]}`)
+        params.set('psIntuitObs', `${filters.personalitySpectrums.intuitiveObservant[0]},${filters.personalitySpectrums.intuitiveObservant[1]}`)
+        params.set('psThinkFeel', `${filters.personalitySpectrums.thinkingFeeling[0]},${filters.personalitySpectrums.thinkingFeeling[1]}`)
+        params.set('psJudgeProspect', `${filters.personalitySpectrums.judgingProspecting[0]},${filters.personalitySpectrums.judgingProspecting[1]}`)
+        params.set('psAssertTurb', `${filters.personalitySpectrums.assertiveTurbulent[0]},${filters.personalitySpectrums.assertiveTurbulent[1]}`)
+      }
+      
+      // RP Style
+      if (filters.rpStyle.length > 0) params.set('rpStyle', filters.rpStyle.join(','))
+      
+      // RP Experience Level
+      if (filters.rpExperienceLevel.length > 0) params.set('rpExperienceLevel', filters.rpExperienceLevel.join(','))
+      
+      // Looking for partner
+      if (filters.lookingForPartner === true) params.set('lookingForPartner', 'true')
+      
+      // Online only
+      if (!filters.onlineOnly) params.set('showOffline', 'true')
+      
+      // Always apply age gap for safety
+      params.set('ageGap', 'true')
+      
+      const response = await apiFetch(`/api/discovery?${params}`)
+      if (response.ok) {
+        const data = await response.json()
+        setFilteredPersonas(data.personas || [])
+      }
+    } catch (error) {
+      console.error('Search failed:', error)
+    } finally {
+      setIsSearching(false)
+    }
+  }, [activeSection])
+
   // Get online personas (for display in "All" section)
   const onlinePersonas = useMemo(() => personas.filter(p => p.isOnline), [personas])
   
   // Get age-appropriate partners (filtered by age gap rules)
   const partnerPersonas = useMemo(() => {
-    // Use age-gap filtered personas for partner matching
-    // These are already filtered to only show users you can chat with
     return ageGapPersonas
   }, [ageGapPersonas])
   
   // Get online age-appropriate partners
   const onlinePartnerPersonas = useMemo(() => partnerPersonas.filter(p => p.isOnline), [partnerPersonas])
 
-  // Get offline age-appropriate partners (for "Discover Partners" section)
+  // Get offline age-appropriate partners
   const offlinePartnerPersonas = useMemo(() => partnerPersonas.filter(p => !p.isOnline), [partnerPersonas])
 
   // Get trending personas (sorted by tags/engagement)
@@ -237,7 +348,7 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
       {/* Header */}
       <div className="flex-shrink-0 border-b border-white/5">
         <div className="p-6 pb-4">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-white">Community Discovery</h1>
               <p className="text-sm text-white/40 mt-1">Explore characters, find partners, and discover new stories</p>
@@ -273,16 +384,8 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
             </div>
           </div>
           
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search characters, storylines, scenarios..."
-              className="h-12 pl-12 pr-4 bg-white/[0.03] border-white/10 text-white placeholder:text-white/30 rounded-xl focus:border-white/20 focus:ring-white/5"
-            />
-          </div>
+          {/* Advanced Search with Filters */}
+          <AdvancedSearch onSearch={handleSearch} isLoading={isSearching} />
         </div>
         
         {/* Section Tabs */}
@@ -308,6 +411,24 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
                 )}
               </button>
             ))}
+            {/* Show Search Results tab when there are active filters */}
+            {currentFilters && filteredPersonas.length > 0 && (
+              <button
+                onClick={() => setActiveSection('search')}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all",
+                  activeSection === 'search'
+                    ? "bg-white text-black"
+                    : "bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white/80 border border-white/5"
+                )}
+              >
+                <Search className="w-4 h-4" />
+                Results
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-white/20 text-[10px]">
+                  {filteredPersonas.length}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -319,6 +440,80 @@ export function DiscoverPage({ onSelectPersona, onOpenMyCharacters, onViewStoryl
             <LoadingSkeleton />
           ) : (
             <>
+              {/* SEARCH RESULTS SECTION */}
+              {activeSection === 'search' && (
+                <div className="space-y-4">
+                  {currentFilters && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <SlidersHorizontal className="w-4 h-4 text-white/40" />
+                      <span className="text-sm text-white/50">
+                        {filteredPersonas.length} result{filteredPersonas.length !== 1 ? 's' : ''} found
+                      </span>
+                      {/* Show active filter pills */}
+                      {currentFilters.mbti.length > 0 && currentFilters.mbti.map(t => (
+                        <span key={t} className="px-2 py-0.5 rounded-full bg-white/10 text-white/60 text-xs border border-white/10">{t}</span>
+                      ))}
+                      {currentFilters.archetype.length > 0 && currentFilters.archetype.slice(0, 3).map(a => (
+                        <span key={a} className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 text-xs border border-amber-500/20">{a}</span>
+                      ))}
+                      {currentFilters.gender.length > 0 && currentFilters.gender.map(g => (
+                        <span key={g} className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 text-xs border border-cyan-500/20">{g}</span>
+                      ))}
+                      {currentFilters.personalitySpectrums && (
+                        <span className="px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 text-xs border border-violet-500/20">Spectrum</span>
+                      )}
+                      {currentFilters.lookingForPartner && (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 text-xs border border-emerald-500/20">Looking for Partner</span>
+                      )}
+                      {currentFilters.onlineOnly && (
+                        <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-300 text-xs border border-green-500/20">Online</span>
+                      )}
+                      {currentFilters.rpStyle.length > 0 && currentFilters.rpStyle.map(s => (
+                        <span key={s} className="px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-300 text-xs border border-teal-500/20">{s}</span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {isSearching ? (
+                    <div className="flex items-center justify-center py-16">
+                      <div className="w-8 h-8 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+                    </div>
+                  ) : filteredPersonas.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                      <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 border border-white/10">
+                        <Search className="w-8 h-8 text-white/50" />
+                      </div>
+                      <p className="text-lg font-medium text-white/70">No matching personas found</p>
+                      <p className="text-sm text-white/40 mt-1">Try adjusting your filters or search terms</p>
+                    </div>
+                  ) : (
+                    <div className={cn(
+                      "grid gap-4",
+                      viewMode === 'grid' 
+                        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+                        : "grid-cols-1"
+                    )}>
+                      {filteredPersonas.map((persona) => (
+                        viewMode === 'list' ? (
+                          <PersonaListItem
+                            key={persona.id}
+                            persona={persona}
+                            onSelect={() => onSelectPersona?.(persona)}
+                          />
+                        ) : (
+                          <PersonaCard
+                            key={persona.id}
+                            persona={persona}
+                            onStartChat={() => {}}
+                            onViewProfile={() => onSelectPersona?.(persona)}
+                          />
+                        )
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* ALL SECTION - Combined view */}
               {activeSection === 'all' && (
                 <>
@@ -696,9 +891,11 @@ function PartnerMatchCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-white truncate">{persona.name}</h3>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              Online
-            </span>
+            {persona.isOnline && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Online
+              </span>
+            )}
           </div>
           <p className="text-sm text-white/40 mb-2">@{persona.username}</p>
           {persona.bio && (
@@ -718,7 +915,7 @@ function PartnerMatchCard({
   )
 }
 
-// Persona List Item Component (for list view mode - shared PersonaCard only supports grid)
+// Persona List Item Component (for list view mode)
 function PersonaListItem({
   persona,
   onSelect
