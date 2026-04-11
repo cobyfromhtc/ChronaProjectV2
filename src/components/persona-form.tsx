@@ -16,6 +16,8 @@ import {
 import { Persona, PersonaConnection, PersonalitySpectrums, BigFiveTraits, HexacoTraits, defaultBigFive, defaultHexaco } from '@/stores/persona-store'
 import { ConnectionFormModal, ExtendedConnection } from '@/components/connection-form-modal'
 import { PERSONA_ARCHETYPES } from '@/lib/constants'
+import { PersonaDnaSigil } from '@/components/persona-dna-sigil'
+import { PersonaMoodBoard } from '@/components/persona-mood-board'
 
 // Constants
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Genderfluid', 'Agender', 'Other', 'Prefer not to say']
@@ -1229,6 +1231,48 @@ export function PersonaForm({ isOpen, onClose, persona, onSave, isAdult = false 
                             </div>
                           </div>
                         </div>
+                      </div>
+
+                      {/* DNA Sigil */}
+                      <div className="relative p-5 rounded-2xl bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/10 overflow-hidden">
+                        <div className="flex items-center gap-4">
+                          <PersonaDnaSigil
+                            archetype={formData.archetype}
+                            secondaryArchetype={formData.secondaryArchetype}
+                            personalitySpectrums={formData.personalitySpectrums}
+                            mbtiType={formData.mbtiType}
+                            size={80}
+                            showLabel={false}
+                          />
+                          <div>
+                            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                              DNA Sigil
+                            </h4>
+                            <p className="text-[10px] text-white/40 mt-1 leading-relaxed">
+                              A unique visual fingerprint generated from your character&apos;s archetype and personality. No two are alike.
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                              {formData.archetype && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-white/50 border border-white/10">{formData.archetype}</span>
+                              )}
+                              {formData.secondaryArchetype && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-white/30 border border-white/10">{formData.secondaryArchetype}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Mood Board */}
+                      <div className="relative p-5 rounded-2xl bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/10 overflow-hidden">
+                        <PersonaMoodBoard
+                          archetype={formData.archetype}
+                          secondaryArchetype={formData.secondaryArchetype}
+                          personalitySpectrums={formData.personalitySpectrums}
+                          personalityDescription={formData.personalityDescription}
+                          appearance={formData.appearance}
+                          mbtiType={formData.mbtiType}
+                        />
                       </div>
 
                       {/* Action Buttons */}
