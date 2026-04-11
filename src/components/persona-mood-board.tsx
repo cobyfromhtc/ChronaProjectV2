@@ -543,9 +543,9 @@ export function PersonaMoodBoard({
   const primary = ARCHETYPE_PALETTE[archetype || 'Other'] || ARCHETYPE_PALETTE['Other']
 
   // Generate all 4 panels
-  const palette = useMemo(() => generateColorPalette(archetype, secondaryArchetype, rng()), [archetype, secondaryArchetype, rng])
-  const atmosphereSvg = useMemo(() => generateAtmosphereSvg(archetype, secondaryArchetype, rng()), [archetype, secondaryArchetype, rng])
-  const textureSvg = useMemo(() => generateTextureSvg(archetype, secondaryArchetype, personalitySpectrums, rng()), [archetype, secondaryArchetype, personalitySpectrums, rng])
+  const palette = useMemo(() => generateColorPalette(archetype, secondaryArchetype, rng), [archetype, secondaryArchetype, rng])
+  const atmosphereSvg = useMemo(() => generateAtmosphereSvg(archetype, secondaryArchetype, rng), [archetype, secondaryArchetype, rng])
+  const textureSvg = useMemo(() => generateTextureSvg(archetype, secondaryArchetype, personalitySpectrums, rng), [archetype, secondaryArchetype, personalitySpectrums, rng])
 
   // Symbolism: combine primary + secondary symbols
   const symbols = useMemo(() => {
