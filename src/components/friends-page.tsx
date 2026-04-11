@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   Users, UserPlus, Clock, Ban, Star, X, MessageCircle,
-  Check, Sparkles, Heart, Send, Loader2, UserX, Mail
+  Check, Sparkles, Heart, Send, Loader2, UserX, Mail,
+  ChevronRight
 } from 'lucide-react'
 import { DM_REFRESH_EVENT } from '@/components/dm-sidebar'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
@@ -658,125 +659,122 @@ export function FriendsPage({ onStartChat }: FriendsPageProps) {
           ))}
         </div>
         
-        <div className="ml-auto">
-          <button
-            onClick={() => {
-              setShowAddFriend(!showAddFriend)
-              if (showAddFriend) {
-                setAddFriendUsername('')
-                setSearchResult(null)
-                setHasSearched(false)
-                setMessage(null)
-              }
-            }}
-            className="btn-persona flex items-center gap-2 text-sm"
-          >
-            <UserPlus className="w-4 h-4" />
-            Add Friend
-          </button>
-        </div>
+
       </div>
       
       {/* Content */}
       <ScrollArea className="flex-1">
         <div className="p-4 max-w-4xl mx-auto">
-          {/* Add Friend Section */}
-          {showAddFriend && (
-            <div className="persona-card persona-card-hover mb-6">
-              <div className="p-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-white/60" />
+          {/* Add Friend Card - always visible at top */}
+          <div className="mb-6">
+            <button
+              onClick={() => {
+                setShowAddFriend(!showAddFriend)
+                if (showAddFriend) {
+                  setAddFriendUsername('')
+                  setSearchResult(null)
+                  setHasSearched(false)
+                  setMessage(null)
+                }
+              }}
+              className="w-full persona-card persona-card-hover p-4 flex items-center gap-4 text-left transition-all"
+            >
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                <UserPlus className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-white/90">Add Friend</h3>
+                <p className="text-xs text-white/50">Find & connect with other roleplayers by username</p>
+              </div>
+              <ChevronRight className={`w-4 h-4 text-white/30 transition-transform ${showAddFriend ? 'rotate-90' : ''}`} />
+            </button>
+            
+            {/* Expandable Add Friend Form */}
+            {showAddFriend && (
+            <div className="mt-2 persona-card p-5 rounded-t-none border-t-0">
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <Input
+                    placeholder="Enter username..."
+                    value={addFriendUsername}
+                    onChange={(e) => setAddFriendUsername(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchResult && canSendRequest(searchResult).canSend) {
+                        handleSendRequest()
+                      }
+                    }}
+                    className="persona-input w-full pr-10"
+                  />
+                  {isSearching && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-white/50" />
+                  )}
+                </div>
+                <button 
+                  onClick={handleSendRequest}
+                  disabled={isSending || !searchResult || !canSendRequest(searchResult).canSend}
+                  className="btn-persona flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  Send Request
+                </button>
+              </div>
+              
+              {/* User Preview / Search Result */}
+              {searchResult && (
+                <div className="mt-3 p-3 rounded-lg bg-white/5 border border-white/10 flex items-center gap-3">
+                  <Avatar className="w-10 h-10 border-2 border-white/20">
+                    <AvatarImage src={searchResult.avatarUrl || undefined} />
+                    <AvatarFallback className="bg-white/10 text-white font-medium">
+                      {searchResult.username.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-semibold text-white/90">{searchResult.username}</p>
+                    {searchResult.activePersona?.name && (
+                      <p className="text-xs text-white/50">as {searchResult.activePersona.name}</p>
+                    )}
+                  </div>
+                  {(() => {
+                    const { canSend, reason } = canSendRequest(searchResult)
+                    return (
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        canSend 
+                          ? 'bg-emerald-500/20 text-emerald-300' 
+                          : 'bg-amber-500/20 text-amber-300'
+                      }`}>
+                        {canSend ? 'Available' : reason}
+                      </span>
+                    )
+                  })()}
+                </div>
+              )}
+              
+              {/* Not Found Message */}
+              {hasSearched && !searchResult && addFriendUsername.trim() && !isSearching && (
+                <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <X className="w-5 h-5 text-red-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white/90">Add Friend</h3>
-                    <p className="text-sm text-white/50">Connect with other roleplayers</p>
+                    <p className="font-medium text-red-300">User not found</p>
+                    <p className="text-xs text-red-400/70">No user with username &quot;{addFriendUsername.trim()}&quot; exists</p>
                   </div>
                 </div>
-                
-                <div className="flex gap-3">
-                  <div className="flex-1 relative">
-                    <Input
-                      placeholder="Enter username..."
-                      value={addFriendUsername}
-                      onChange={(e) => setAddFriendUsername(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && searchResult && canSendRequest(searchResult).canSend) {
-                          handleSendRequest()
-                        }
-                      }}
-                      className="persona-input w-full pr-10"
-                    />
-                    {isSearching && (
-                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-white/50" />
-                    )}
-                  </div>
-                  <button 
-                    onClick={handleSendRequest}
-                    disabled={isSending || !searchResult || !canSendRequest(searchResult).canSend}
-                    className="btn-persona flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                    Send Request
-                  </button>
-                </div>
-                
-                {/* User Preview / Search Result */}
-                {searchResult && (
-                  <div className="mt-3 p-3 rounded-lg bg-white/5 border border-white/10 flex items-center gap-3">
-                    <Avatar className="w-10 h-10 border-2 border-white/20">
-                      <AvatarImage src={searchResult.avatarUrl || undefined} />
-                      <AvatarFallback className="bg-white/10 text-white font-medium">
-                        {searchResult.username.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-semibold text-white/90">{searchResult.username}</p>
-                      {searchResult.activePersona?.name && (
-                        <p className="text-xs text-white/50">as {searchResult.activePersona.name}</p>
-                      )}
-                    </div>
-                    {(() => {
-                      const { canSend, reason } = canSendRequest(searchResult)
-                      return (
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          canSend 
-                            ? 'bg-emerald-500/20 text-emerald-300' 
-                            : 'bg-amber-500/20 text-amber-300'
-                        }`}>
-                          {canSend ? 'Available' : reason}
-                        </span>
-                      )
-                    })()}
-                  </div>
-                )}
-                
-                {/* Not Found Message - Only show after search settles */}
-                {hasSearched && !searchResult && addFriendUsername.trim() && !isSearching && (
-                  <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                      <X className="w-5 h-5 text-red-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-red-300">User not found</p>
-                      <p className="text-xs text-red-400/70">No user with username &quot;{addFriendUsername.trim()}&quot; exists</p>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Success/Error Message */}
-                {message && (
-                  <p className={`mt-3 text-sm ${message.type === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {message.text}
-                  </p>
-                )}
-              </div>
+              )}
+              
+              {/* Success/Error Message */}
+              {message && (
+                <p className={`mt-3 text-sm ${message.type === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {message.text}
+                </p>
+              )}
             </div>
-          )}
+            )}
+          </div>
           
           {/* Pending Requests */}
           {activeTab === 'pending' && (
