@@ -156,6 +156,15 @@ export function WalletPage() {
       const result = await response.json()
 
       if (!response.ok) {
+        // Show friendly message when payments aren't configured yet
+        if (response.status === 503) {
+          toast({
+            title: 'Coming Soon',
+            description: 'Chronos purchases will be available in the future. Stay tuned!',
+          })
+          setIsProcessingPayment(false)
+          return
+        }
         throw new Error(result.error || 'Failed to start checkout')
       }
 
@@ -164,7 +173,6 @@ export function WalletPage() {
         window.location.href = result.checkoutUrl
       }
     } catch (error) {
-      console.error('Checkout error:', error)
       toast({ title: 'Error', description: error instanceof Error ? error.message : 'Failed to start checkout', variant: 'destructive' })
       setIsProcessingPayment(false)
     }
