@@ -192,3 +192,21 @@ Stage Summary:
 - Backend API supports all new filter parameters
 - Age gap filtering enforced on all discovery searches for safety
 - Lint passes cleanly, dev server running successfully
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Fix rng is not a function bug + Failed to create checkout session error
+
+Work Log:
+- Diagnosed persona-mood-board.tsx RNG bug: three useMemo calls shared a single mutable rng closure, causing state drift when React evaluates them in unpredictable order
+- Fixed by creating three independent rng instances (rngPalette, rngAtmosphere, rngTexture) with offset seeds (seed, seed+1, seed+2) so each panel's randomness is deterministic and isolated
+- Diagnosed checkout crash: /api/chronos/checkout/route.ts called stripe.checkout.sessions.create() without null check — when STRIPE_SECRET_KEY is not set, stripe is null and throws TypeError
+- Fixed by adding isStripeConfigured() check at top of POST handler, returning 503 with clear message "Payments are not currently available"
+- Imported isStripeConfigured from @/lib/stripe in checkout route
+- Lint passes cleanly, dev server running successfully
+
+Stage Summary:
+- RNG bug fixed: each mood board panel now has its own deterministic rng instance, eliminating React evaluation order dependency
+- Checkout crash fixed: API route now returns 503 gracefully when Stripe is not configured instead of crashing with TypeError
+- No changes to wallet-page.tsx needed — it already has proper error handling via toast notifications

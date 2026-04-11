@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 // Using db-native to avoid caching issues with new Prisma models
 import { db } from '@/lib/db-native'
 import { getSession } from '@/lib/auth'
-import { stripe, getChronosPack, generateReceiptNumber } from '@/lib/stripe'
+import { stripe, isStripeConfigured, getChronosPack, generateReceiptNumber } from '@/lib/stripe'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS, logSuspiciousActivity } from '@/lib/rate-limit'
 
 // Force reload v3 - using db-native
@@ -15,6 +15,14 @@ export async function POST(request: Request) {
     const user = await getSession()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if Stripe is configured
+    if (!isStripeConfigured() || !stripe) {
+      return NextResponse.json(
+        { error: 'Payments are not currently available. Please try again later.' },
+        { status: 503 }
+      )
     }
 
     // Check rate limit for checkout attempts

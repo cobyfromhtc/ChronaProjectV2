@@ -538,14 +538,18 @@ export function PersonaMoodBoard({
     return hashString(parts.join('|') || 'default-mood')
   }, [archetype, secondaryArchetype, personalitySpectrums, mbtiType, variant])
 
-  const rng = useMemo(() => createRng(seed), [seed])
+  // Each generator gets its own independent rng instance so React's
+  // useMemo evaluation order never causes state drift between panels.
+  const rngPalette = useMemo(() => createRng(seed), [seed])
+  const rngAtmosphere = useMemo(() => createRng(seed + 1), [seed])
+  const rngTexture = useMemo(() => createRng(seed + 2), [seed])
 
   const primary = ARCHETYPE_PALETTE[archetype || 'Other'] || ARCHETYPE_PALETTE['Other']
 
   // Generate all 4 panels
-  const palette = useMemo(() => generateColorPalette(archetype, secondaryArchetype, rng), [archetype, secondaryArchetype, rng])
-  const atmosphereSvg = useMemo(() => generateAtmosphereSvg(archetype, secondaryArchetype, rng), [archetype, secondaryArchetype, rng])
-  const textureSvg = useMemo(() => generateTextureSvg(archetype, secondaryArchetype, personalitySpectrums, rng), [archetype, secondaryArchetype, personalitySpectrums, rng])
+  const palette = useMemo(() => generateColorPalette(archetype, secondaryArchetype, rngPalette), [archetype, secondaryArchetype, rngPalette])
+  const atmosphereSvg = useMemo(() => generateAtmosphereSvg(archetype, secondaryArchetype, rngAtmosphere), [archetype, secondaryArchetype, rngAtmosphere])
+  const textureSvg = useMemo(() => generateTextureSvg(archetype, secondaryArchetype, personalitySpectrums, rngTexture), [archetype, secondaryArchetype, personalitySpectrums, rngTexture])
 
   // Symbolism: combine primary + secondary symbols
   const symbols = useMemo(() => {
