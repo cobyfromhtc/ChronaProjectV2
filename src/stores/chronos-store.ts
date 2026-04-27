@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore } from './auth-store'
+import { apiFetch, apiJson } from '@/lib/api-client'
 
 export interface ChronosData {
   chronos: number
@@ -77,11 +78,7 @@ export function useChronos() {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      const response = await fetch('/api/chronos')
-      if (!response.ok) {
-        throw new Error('Failed to fetch Chronos data')
-      }
-      const data = await response.json()
+      const data = await apiJson<ChronosData>('/api/chronos')
       setState({ data, isLoading: false, error: null })
     } catch (error) {
       console.error('Error fetching Chronos:', error)
@@ -101,16 +98,13 @@ export function useChronos() {
   // Purchase a persona slot
   const purchaseSlot = useCallback(async () => {
     try {
-      const response = await fetch('/api/chronos/purchase', {
+      const result = await apiJson<{ success?: boolean; error?: string; bonusReceived?: boolean; isFirstPurchase?: boolean; message?: string }>('/api/chronos/purchase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'buy_slot' })
+        body: JSON.stringify({ action: 'buy_slot' }),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to purchase slot' }
+      if (result.error) {
+        return { success: false, error: result.error }
       }
 
       await fetchData()
@@ -129,16 +123,13 @@ export function useChronos() {
   // Purchase name color
   const purchaseNameColor = useCallback(async (color: string) => {
     try {
-      const response = await fetch('/api/chronos/purchase', {
+      const result = await apiJson<{ success?: boolean; error?: string; bonusReceived?: boolean; isFirstPurchase?: boolean; message?: string }>('/api/chronos/purchase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'buy_name_color', data: { color } })
+        body: JSON.stringify({ action: 'buy_name_color', data: { color } }),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to purchase name color' }
+      if (result.error) {
+        return { success: false, error: result.error }
       }
 
       await fetchData()
@@ -157,16 +148,13 @@ export function useChronos() {
   // Purchase profile theme
   const purchaseTheme = useCallback(async (themeId: string) => {
     try {
-      const response = await fetch('/api/chronos/purchase', {
+      const result = await apiJson<{ success?: boolean; error?: string; bonusReceived?: boolean; isFirstPurchase?: boolean; message?: string }>('/api/chronos/purchase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'buy_theme', data: { themeId } })
+        body: JSON.stringify({ action: 'buy_theme', data: { themeId } }),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to purchase theme' }
+      if (result.error) {
+        return { success: false, error: result.error }
       }
 
       await fetchData()
@@ -185,16 +173,13 @@ export function useChronos() {
   // Spend for extra image
   const spendForExtraImage = useCallback(async () => {
     try {
-      const response = await fetch('/api/chronos/purchase', {
+      const result = await apiJson<{ success?: boolean; error?: string }>('/api/chronos/purchase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'extra_image' })
+        body: JSON.stringify({ action: 'extra_image' }),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to send extra image' }
+      if (result.error) {
+        return { success: false, error: result.error }
       }
 
       await fetchData()
@@ -208,16 +193,13 @@ export function useChronos() {
   // Spend for storyline creation
   const spendForStoryline = useCallback(async () => {
     try {
-      const response = await fetch('/api/chronos/purchase', {
+      const result = await apiJson<{ success?: boolean; error?: string; bonusReceived?: boolean; isFirstPurchase?: boolean; message?: string }>('/api/chronos/purchase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create_storyline' })
+        body: JSON.stringify({ action: 'create_storyline' }),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to create storyline' }
+      if (result.error) {
+        return { success: false, error: result.error }
       }
 
       await fetchData()
@@ -236,15 +218,12 @@ export function useChronos() {
   // Claim daily bonus (50 Chronos)
   const claimDailyBonus = useCallback(async () => {
     try {
-      const response = await fetch('/api/chronos/daily', {
+      const result = await apiJson<{ success?: boolean; error?: string; amount?: number; canClaim?: boolean; nextClaimIn?: string }>('/api/chronos/daily', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to claim daily bonus', canClaim: result.canClaim, nextClaimIn: result.nextClaimIn }
+      if (result.error) {
+        return { success: false, error: result.error, canClaim: result.canClaim, nextClaimIn: result.nextClaimIn }
       }
 
       await fetchData()
@@ -258,11 +237,10 @@ export function useChronos() {
   // Check daily bonus status
   const checkDailyBonus = useCallback(async () => {
     try {
-      const response = await fetch('/api/chronos/daily')
-      if (!response.ok) {
+      const result = await apiJson<{ canClaim?: boolean; nextClaimIn?: string; amount?: number }>('/api/chronos/daily').catch(() => ({ canClaim: false, nextClaimIn: '', amount: 0 }))
+      if (!result.canClaim) {
         return { canClaim: false, nextClaimIn: '', amount: 0 }
       }
-      const result = await response.json()
       return { canClaim: result.canClaim, nextClaimIn: result.nextClaimIn, amount: result.amount }
     } catch (error) {
       return { canClaim: false, nextClaimIn: '', amount: 0 }
@@ -272,16 +250,13 @@ export function useChronos() {
   // Claim daily login bonus
   const claimDailyLogin = useCallback(async () => {
     try {
-      const response = await fetch('/api/chronos/purchase', {
+      const result = await apiJson<{ success?: boolean; error?: string }>('/api/chronos/purchase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'earn_daily' })
+        body: JSON.stringify({ action: 'earn_daily' }),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to claim daily bonus' }
+      if (result.error) {
+        return { success: false, error: result.error }
       }
 
       await fetchData()
@@ -295,16 +270,13 @@ export function useChronos() {
   // Claim weekly streak bonus
   const claimStreakBonus = useCallback(async () => {
     try {
-      const response = await fetch('/api/chronos/purchase', {
+      const result = await apiJson<{ success?: boolean; error?: string }>('/api/chronos/purchase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'earn_streak' })
+        body: JSON.stringify({ action: 'earn_streak' }),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to claim streak bonus' }
+      if (result.error) {
+        return { success: false, error: result.error }
       }
 
       await fetchData()
@@ -318,16 +290,13 @@ export function useChronos() {
   // Gift Chronos to another user
   const giftChronos = useCallback(async (recipientUsername: string, amount: number, message?: string) => {
     try {
-      const response = await fetch('/api/chronos/gift', {
+      const result = await apiJson<{ success?: boolean; error?: string; recipientUsername?: string; amount?: number; message?: string }>('/api/chronos/gift', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipientUsername, amount, message })
+        body: JSON.stringify({ recipientUsername, amount, message }),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to send gift' }
+      if (result.error) {
+        return { success: false, error: result.error }
       }
 
       await fetchData()

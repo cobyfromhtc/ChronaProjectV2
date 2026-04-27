@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { SignJWT, jwtVerify } from 'jose'
 import { db } from './db'
 import bcrypt from 'bcryptjs'
@@ -153,9 +153,24 @@ export async function verifySession(token: string): Promise<SessionUser | null> 
   }
 }
 
-// Get current session from cookies
+// Get current session from cookies or Authorization header
 export async function getSession(): Promise<SessionUser | null> {
   try {
+    // First try Authorization header (for API calls with Bearer token)
+    // This supports clients that send auth via header instead of cookies
+    try {
+      const headersList = await headers()
+      const authHeader = headersList.get('Authorization')
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.slice(7)
+        const user = await verifySession(token)
+        if (user) return user
+      }
+    } catch {
+      // headers() may not be available in all contexts
+    }
+    
+    // Fall back to cookie session
     const cookieStore = await cookies()
     const token = cookieStore.get('session')?.value
     

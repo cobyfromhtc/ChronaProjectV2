@@ -115,6 +115,9 @@ export function useAuth() {
   
   // Handle browser close/refresh - set offline
   useEffect(() => {
+    let lastOnlinePing = 0
+    const ONLINE_PING_COOLDOWN = 30000 // 30 seconds between online pings
+    
     const handleBeforeUnload = () => {
       if (isAuthenticated) {
         setOfflineOnExit()
@@ -122,10 +125,15 @@ export function useAuth() {
     }
     
     const handleVisibilityChange = () => {
+      const now = Date.now()
       if (document.visibilityState === 'hidden' && isAuthenticated) {
         setOfflineOnExit()
       } else if (document.visibilityState === 'visible' && isAuthenticated) {
-        setOnlineStatus(true)
+        // Throttle online pings to avoid excessive API calls
+        if (now - lastOnlinePing > ONLINE_PING_COOLDOWN) {
+          lastOnlinePing = now
+          setOnlineStatus(true)
+        }
       }
     }
     

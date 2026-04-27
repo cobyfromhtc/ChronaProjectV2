@@ -1,5 +1,89 @@
 # Chrona Worklog
 
+## Bug Fix: Critical Auth/401 Errors — Chronos Data, Achievements, Storylines, and Friends
+
+**Date:** 2025-03-06
+**Status:** Completed
+
+### Problem
+Multiple API endpoints were returning 401 (Unauthorized) errors, causing:
+- "Failed to fetch Chronos data" console error
+- "Unauthorized" error in AchievementModal
+- Official Chrona Community storyline not appearing
+- Friends, DM requests, notifications, and other features not loading
+- `GET /api/personas/online` returning 405 (Method Not Allowed)
+- `POST /api/personas/online` being called in an infinite loop
+
+### Root Causes
+
+**1. `getSession()` only read cookies, not Authorization headers**
+The `getSession()` function in `src/lib/auth.ts` only read the session from cookies. However, in the sandbox/proxy environment, cookies are not reliably forwarded by the Caddy gateway. Routes using `getSession()` (chronos, achievements, storylines, friends) always returned 401, while routes using `getSessionFromRequest()` (which also checks the Authorization header) worked fine.
+
+**2. Frontend plain `fetch` calls didn't include Authorization header**
+Many components used plain `fetch('/api/...')` instead of `apiFetch()`, which meant the Authorization header from localStorage was never sent. The `chronos-store.ts`, `storylines-page.tsx`, `friends-page.tsx`, and other components all used plain fetch.
+
+**3. `/api/personas/online` had no GET handler**
+The `activity-modal.tsx` component called `GET /api/personas/online` but the route only supported POST (for setting online/offline status), returning 405.
+
+**4. Users were not auto-joined to the official community**
+The official Chrona Community existed in the database but users weren't automatically joined, so it didn't appear in their storyline sidebar.
+
+**5. Excessive online status pings**
+The visibility change handler in `useAuth` triggered `setOnlineStatus(true)` every time the tab became visible, without throttling.
+
+### Changes Made
+
+#### 1. `src/lib/auth.ts` — `getSession()` now checks Authorization header
+- Added `headers()` import from `next/headers`
+- `getSession()` now first tries to read the Authorization header from the incoming request via `headers()`, then falls back to cookies
+- This makes ALL routes that use `getSession()` automatically support both cookie-based and header-based auth
+- No changes needed to individual API routes
+
+#### 2. `src/components/auth-fetch-provider.tsx` — New global fetch interceptor
+- Created `AuthFetchProvider` client component that patches `window.fetch`
+- Automatically adds the `Authorization: Bearer ${token}` header to all `/api/` requests
+- Only adds the header if it's not already present
+- Preserves the original fetch for non-API requests
+- Added to `src/app/layout.tsx` as a wrapper around children
+
+#### 3. `src/stores/chronos-store.ts` — Use `apiFetch`/`apiJson` instead of plain `fetch`
+- Replaced all `fetch('/api/chronos')` calls with `apiJson('/api/chronos')`
+- This ensures the Authorization header is always included
+- All purchase, gift, daily bonus, and other API calls now use the authenticated client
+
+#### 4. `src/app/api/personas/online/route.ts` — Added GET handler
+- New `GET()` handler returns online personas (excluding current user)
+- Returns persona data: id, name, avatarUrl, isOnline, archetype, gender, tags, username, userId
+- Limited to 50 results, ordered by most recently updated
+- Uses `getSession()` which now supports Authorization header
+
+#### 5. `src/app/api/storylines/joined/route.ts` — Auto-join official community
+- Added auto-join logic at the beginning of the GET handler
+- When fetching joined storylines, checks if user is a member of the official community
+- If not, automatically joins them with the "Member" role
+- Auto-join failures don't block the main request
+
+#### 6. `src/hooks/use-auth.ts` — Throttle online status pings
+- Added 30-second cooldown between online status pings
+- Prevents excessive API calls from visibility change events
+- Still allows the initial online ping on authentication
+
+### Verification
+- All previously 401 routes now return 200:
+  - `GET /api/chronos 200` ✅
+  - `POST /api/achievements 200` ✅
+  - `GET /api/storylines 200` ✅
+  - `GET /api/friends 200` ✅
+  - `GET /api/conversations 200` ✅
+  - `GET /api/notifications 200` ✅
+  - `GET /api/storylines/joined 200` ✅
+  - `GET /api/personas/online 200` ✅
+- Official Chrona Community now appears in user's storyline list
+- No new lint errors introduced
+- Pre-existing lint errors remain (StorylineModal.tsx, persona-form.tsx)
+
+---
+
 ## Master Summary — All Tasks Completed
 
 **Date:** 2025-03-05
