@@ -1938,7 +1938,7 @@ export function DmRequestDialog({
 }
 
 // ==================== HOME PAGE (Discovery) ====================
-function HomePageContent({ onStartChat, onNavigate, onOpenEditProfile, onOpenMyPersonas }: { onStartChat: (conv: Conversation) => void; onNavigate?: (item: string) => void; onOpenEditProfile?: () => void; onOpenMyPersonas?: () => void }) {
+function HomePageContent({ onStartChat, onNavigate, onOpenEditProfile, onOpenMyPersonas, navigationMode }: { onStartChat: (conv: Conversation) => void; onNavigate?: (item: string) => void; onOpenEditProfile?: () => void; onOpenMyPersonas?: () => void; navigationMode?: 'static' | 'linear' }) {
   const { user } = useAuth()
   const userIsAdult = user?.dateOfBirth ? isAdult(new Date(user.dateOfBirth)) : false
   const { personas, activePersona, isLoading: personasLoading, createPersona } = usePersonas()
@@ -2136,7 +2136,7 @@ function HomePageContent({ onStartChat, onNavigate, onOpenEditProfile, onOpenMyP
     <div className="flex flex-col h-full min-h-0 persona-bg">
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
         {/* Featured Storylines Banner (includes topbar inside it) */}
-        <FeaturedStorylinesBanner onNavigate={onNavigate} onOpenEditProfile={onOpenEditProfile} onOpenMyPersonas={onOpenMyPersonas} />
+        <FeaturedStorylinesBanner onNavigate={onNavigate} onOpenEditProfile={onOpenEditProfile} onOpenMyPersonas={onOpenMyPersonas} navigationMode={navigationMode} />
 
         <div className="p-4 pt-3">
         {/* Header row with My Characters button */}
@@ -2584,7 +2584,7 @@ function MainApp() {
       <AdminPanel />
     </Suspense>
   ) : (
-    <HomePageContent onStartChat={handleStartChat} onNavigate={handleNavigate} onOpenEditProfile={() => {
+    <HomePageContent onStartChat={handleStartChat} onNavigate={handleNavigate} navigationMode={navigationMode} onOpenEditProfile={() => {
       window.dispatchEvent(new CustomEvent('chrona:open-edit-profile'))
     }} onOpenMyPersonas={() => {
       handleSetActiveTab('home')
@@ -2626,7 +2626,7 @@ function MainApp() {
             />
           )}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-            {navigationMode === 'linear' && activeTab !== 'home' && (
+            {navigationMode === 'linear' && (
               <NavigationTopbar
                 variant="default"
                 activeItem={activeTab === 'wallet' ? 'chronos' : activeTab}

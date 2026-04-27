@@ -42,6 +42,46 @@
 
 ---
 
+## Bug Fix: Static and Linear Navigation Options Not Working on Chrona V1 UI
+
+**Date:** 2025-03-06
+**Status:** Completed
+
+### Problem
+On the Chrona V1 UI, the "Static" and "Linear" navigation mode options in the sidebar dropdown and profile dropdown would not work properly. When switching to Linear mode:
+1. The NavigationTopbar was hidden on the home page (Discover) because of the condition `activeTab !== 'home'`
+2. The Featured Storylines Banner showed a duplicate embedded navigation bar, creating visual clutter
+3. Users had no clear way to navigate or switch back to Static mode since the main Sidebar was gone
+
+### Root Causes
+1. **NavigationTopbar hidden on home page**: The condition `{navigationMode === 'linear' && activeTab !== 'home' && ...}` prevented the topbar from rendering on the Discover page, leaving users without navigation
+2. **Duplicate navigation in banner**: The FeaturedStorylinesBanner always showed its embedded NavigationTopbar (inside-banner variant) when `uiVariant === 'chrona'`, regardless of navigation mode — causing two navigation bars in Linear mode
+3. **No navigationMode prop passed to banner**: The banner component had no awareness of the current navigation mode
+
+### Changes Made
+
+#### 1. `src/app/page.tsx` — Show NavigationTopbar in Linear mode on ALL pages
+- Removed the `activeTab !== 'home'` condition from the NavigationTopbar render check
+- Changed from: `{navigationMode === 'linear' && activeTab !== 'home' && (...)}`
+- Changed to: `{navigationMode === 'linear' && (...)}`
+- Added `navigationMode` prop to `HomePageContent` component
+- Passed `navigationMode` to `FeaturedStorylinesBanner` component
+
+#### 2. `src/components/featured-storylines-banner.tsx` — Hide duplicate navigation in Linear mode
+- Added `navigationMode` prop to `FeaturedStorylinesBannerProps` interface
+- Updated `showTopbar` logic to account for navigation mode: `uiVariant === 'chrona' && navigationMode === 'static'`
+- In Linear mode, the page-level NavigationTopbar handles navigation, so the banner's embedded topbar is hidden
+- In Static mode, the banner's embedded topbar continues to show as before (inside the banner image)
+
+### Verification
+- Tested switching from Static → Linear → Static using both the sidebar dropdown and the profile dropdown
+- NavigationTopbar now shows on ALL pages in Linear mode (including Discover)
+- Featured Storylines Banner no longer shows duplicate navigation in Linear mode
+- Both modes persist correctly after page reload
+- No lint errors in modified files
+
+---
+
 ## Task 1: Add Discord-like Features to Storyline Servers
 
 **Date:** 2025-03-05

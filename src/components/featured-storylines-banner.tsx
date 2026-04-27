@@ -36,6 +36,7 @@ interface FeaturedStorylinesBannerProps {
   onNavigate?: (item: string) => void
   onOpenEditProfile?: () => void
   onOpenMyPersonas?: () => void
+  navigationMode?: 'static' | 'linear'
 }
 
 // Genre-based gradient map for fallback backgrounds
@@ -67,9 +68,11 @@ function estimateRating(storyline: FeaturedStoryline): number {
   return Math.min(Math.round(base + boostBonus + 10), 99)
 }
 
-export function FeaturedStorylinesBanner({ onJoinStoryline, onNavigate, onOpenEditProfile, onOpenMyPersonas }: FeaturedStorylinesBannerProps) {
+export function FeaturedStorylinesBanner({ onJoinStoryline, onNavigate, onOpenEditProfile, onOpenMyPersonas, navigationMode = 'static' }: FeaturedStorylinesBannerProps) {
   const { variant: uiVariant } = useUIVariant()
-  const showTopbar = uiVariant === 'chrona'
+  // Show the embedded topbar inside the banner only in Chrona V1 and Static navigation mode
+  // In Linear mode, the page-level NavigationTopbar is already shown above the content
+  const showTopbar = uiVariant === 'chrona' && navigationMode === 'static'
   const [storylines, setStorylines] = useState<FeaturedStoryline[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
