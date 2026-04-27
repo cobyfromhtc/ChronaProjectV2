@@ -1,5 +1,52 @@
 # Chrona Worklog
 
+## Bug Fix: Profile-Dropdown Modal Appearing Off-Screen in Horizon and Nexus UIs
+
+**Date:** 2026-04-27
+**Status:** Completed
+
+### Problem
+The ProfileDropdown modal appeared completely off-screen when clicking the PFP (profile picture) in both the Horizon and Nexus UI themes. The dropdown was invisible because it was being positioned far to the left of the viewport.
+
+### Root Causes
+
+**1. Wrong horizontal alignment for left-sidebar triggers**
+Both Nexus and Horizon shells passed `position="top-right"` to ProfileDropdown. Since the avatar trigger is in a narrow left sidebar (~48px from left edge), `position="top-right"` caused `styles.right = window.innerWidth - rect.right ≈ 1872px`. In CSS, `right: 1872px` means the dropdown's right edge is 1872px from the viewport's right edge, effectively pushing the entire 380px-wide dropdown completely off-screen to the left.
+
+**2. DROPDOWN_ESTIMATED_HEIGHT too low**
+The estimated height was 450px, but the actual dropdown content was 582.5px tall. The auto-flip logic checked `spaceAbove (525) < 450` → false, so it didn't flip. But 525px of space wasn't enough for 582.5px of content, resulting in the dropdown extending 57.5px above the viewport (top = -57.5).
+
+**3. No viewport overflow handling**
+When the dropdown didn't fit in either direction (above or below trigger), there was no `max-height` constraint or scrolling, so content simply overflowed off-screen.
+
+**4. No horizontal auto-flip**
+The horizontal positioning blindly followed the `position` prop without checking if the dropdown would actually fit in the requested direction.
+
+### Changes Made
+
+#### 1. `src/components/profile-dropdown.tsx` — Comprehensive positioning overhaul
+- **Increased DROPDOWN_ESTIMATED_HEIGHT** from 450 to 600 for more accurate space estimation
+- **Added horizontal auto-flip logic**: If `position="*-right"` but there isn't enough space to the left (and more space exists to the right), the dropdown auto-flips to left-aligned. Vice versa for `position="*-left"`.
+- **Added max-height + overflow scroll**: When the available vertical space is less than the estimated dropdown height, `maxHeight` is set to the available space (minimum 200px) and `overflowY: auto` enables scrolling.
+- **Added viewport padding clamping**: Both horizontal and vertical positions are clamped to ensure at least 8px padding from viewport edges.
+
+#### 2. `src/components/layouts/nexus-shell.tsx` — Position prop fix
+- Changed `position="top-right"` to `position="top-left"` on the ProfileDropdown component
+- Since the avatar is in the left sidebar, the dropdown should open with its left edge aligned with the trigger (not right edge)
+
+#### 3. `src/components/layouts/horizon-shell.tsx` — Position prop fix
+- Changed `position="top-right"` to `position="top-left"` on the ProfileDropdown component
+- Same reasoning as Nexus shell
+
+### Verification
+- **Horizon UI**: Dropdown positioned at top=8, bottom=525, left=8 — fully on-screen ✅
+- **Nexus UI**: Dropdown positioned at top=8, bottom=489, left=8 — fully on-screen ✅
+- **Chrona V2 UI**: Dropdown positioned at top=45.5 — still works correctly ✅
+- VLM analysis confirms dropdown is "fully visible" and "no part of it is cut off"
+- Pre-existing lint errors remain unchanged (not introduced by this fix)
+
+---
+
 ## Bug Fix: Critical Auth/401 Errors — Chronos Data, Achievements, Storylines, and Friends
 
 **Date:** 2025-03-06

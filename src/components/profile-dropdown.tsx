@@ -106,12 +106,14 @@ export function ProfileDropdown({
   // Friends count
   const [friendsCount, setFriendsCount] = useState(0)
 
-  // Update dropdown position with auto-flip when viewport space is insufficient
+  // Update dropdown position with auto-flip and viewport clamping
   const updateDropdownPosition = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      const DROPDOWN_ESTIMATED_HEIGHT = 450
+      const DROPDOWN_ESTIMATED_HEIGHT = 600
+      const DROPDOWN_ESTIMATED_WIDTH = 380
       const GAP = 8
+      const VIEWPORT_PADDING = 8
       const styles: CSSProperties = {
         position: 'fixed',
         zIndex: 9999,
@@ -121,25 +123,55 @@ export function ProfileDropdown({
       const spaceBelow = window.innerHeight - rect.bottom - GAP
       const spaceAbove = rect.top - GAP
       const isBottom = position.startsWith('bottom')
+
+      // Choose the direction with more space, preferring the requested direction
       const shouldFlipToTop = isBottom && spaceBelow < DROPDOWN_ESTIMATED_HEIGHT && spaceAbove > spaceBelow
       const shouldFlipToBottom = !isBottom && spaceAbove < DROPDOWN_ESTIMATED_HEIGHT && spaceBelow > spaceAbove
 
       const effectiveIsTop = isBottom ? shouldFlipToTop : !shouldFlipToBottom
 
+      // Calculate available height and set max-height to keep dropdown on screen
+      let availableHeight: number
       if (effectiveIsTop) {
         // Position above the trigger
-        styles.bottom = window.innerHeight - rect.top + GAP
+        const bottomEdge = window.innerHeight - rect.top + GAP
+        styles.bottom = bottomEdge
+        availableHeight = rect.top - GAP - VIEWPORT_PADDING
       } else {
         // Position below the trigger
-        styles.top = rect.bottom + GAP
+        const topEdge = rect.bottom + GAP
+        styles.top = topEdge
+        availableHeight = window.innerHeight - topEdge - VIEWPORT_PADDING
       }
 
-      // Horizontal positioning (never auto-flips)
+      // Clamp max-height so the dropdown never extends beyond the viewport
+      if (availableHeight < DROPDOWN_ESTIMATED_HEIGHT) {
+        styles.maxHeight = Math.max(200, availableHeight)
+        styles.overflowY = 'auto'
+      }
+
+      // Horizontal positioning with auto-flip
       const isRight = position.endsWith('right')
-      if (isRight) {
+      const spaceToRight = window.innerWidth - rect.left
+      const spaceToLeft = rect.right
+      const shouldFlipHorizontalRight = isRight && spaceToLeft < DROPDOWN_ESTIMATED_WIDTH && spaceToRight > spaceToLeft
+      const shouldFlipHorizontalLeft = !isRight && spaceToRight < DROPDOWN_ESTIMATED_WIDTH && spaceToLeft > spaceToRight
+      const effectiveIsRight = isRight ? !shouldFlipHorizontalRight : shouldFlipHorizontalLeft
+
+      if (effectiveIsRight) {
+        // Align dropdown's right edge with trigger's right edge
         styles.right = window.innerWidth - rect.right
       } else {
+        // Align dropdown's left edge with trigger's left edge
         styles.left = rect.left
+      }
+
+      // Clamp to viewport: ensure dropdown never goes off-screen horizontally
+      if (styles.left !== undefined && styles.left < VIEWPORT_PADDING) {
+        styles.left = VIEWPORT_PADDING
+      }
+      if (styles.right !== undefined && styles.right < VIEWPORT_PADDING) {
+        styles.right = VIEWPORT_PADDING
       }
 
       setDropdownStyle(styles)

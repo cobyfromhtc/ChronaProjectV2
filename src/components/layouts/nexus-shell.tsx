@@ -591,7 +591,7 @@ export function NexusShell({
               onNavigate={onNavigate}
               onOpenEditProfile={onOpenEditProfile}
               onOpenMyPersonas={onOpenMyPersonas}
-              position="top-right"
+              position="top-left"
               trigger={
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.06] transition-colors cursor-pointer">
                   <div className="relative">
