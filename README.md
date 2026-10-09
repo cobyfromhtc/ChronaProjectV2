@@ -133,6 +133,96 @@ cd mini-services/chat-service
 bun run dev
 ```
 
+```
+# STARTING THE WHOLE PROCESS [[ 
+$PROJECT = "C:\Users\User\Downloads\ChronaProjectV2-main"
+ $PB = "$PROJECT\mini-services\pocketbase-service\pocketbase.exe"
+ $PBDIR = "$PROJECT\mini-services\pocketbase-service"
+
+Write-Host "`n=== Starting Chrona ===`n" -ForegroundColor Cyan
+
+# 1. Start Pocketbase in background
+Write-Host "[1/4] Starting Pocketbase..." -ForegroundColor Yellow
+Start-Process -FilePath $PB -ArgumentList "serve","--http=127.0.0.1:8090","--dir=$PBDIR\pb_data","--publicDir=$PBDIR\pb_public","--migrationsDir=$PBDIR\pb_migrations" -WindowStyle Minimized
+Start-Sleep -Seconds 3
+Write-Host "  Done." -ForegroundColor Green
+
+# 2. Create collections (only first run)
+Write-Host "[2/4] Setting up collections..." -ForegroundColor Yellow
+Set-Location $PROJECT
+bun run scripts/setup-pocketbase.ts 2>&1 | Select-Object -Last 3
+Write-Host "  Done." -ForegroundColor Green
+
+# 3. Seed wiki + logo
+Write-Host "[3/4] Seeding wiki + logo..." -ForegroundColor Yellow
+try { Invoke-RestMethod -Uri "http://127.0.0.1:8090/api/storylines/seed-official" -TimeoutSec 10 | Out-Null; Write-Host "  Done." -ForegroundColor Green } catch { Write-Host "  Skipped." -ForegroundColor DarkGray }
+
+# 4. Start Next.js
+Write-Host "[4/4] Starting Next.js...`n" -ForegroundColor Yellow
+Write-Host "App will be at http://localhost:3000`n" -ForegroundColor Cyan
+npx next dev -p 3000
+# END OF SCRIPT ]]
+```
+
+```
+# To stop everything:
+Get-Process bun,pocketbase,node -ErrorAction SilentlyContinue | Stop-Process -Force
+```
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+```
+# ChronaProjectV2 — Upload to GitHub Repo
+# Run this in PowerShell from C:\Users\User\Downloads\ChronaProjectV2
+# ============================================================
+
+Write-Host "`n=== ChronaProjectV2 GitHub Upload ===`n" -ForegroundColor Cyan
+
+# Navigate to the project folder
+Set-Location "$env:USERPROFILE\Downloads\ChronaProjectV2"
+Write-Host "Working directory: $(Get-Location)" -ForegroundColor Green
+
+# Initialize git if not already a repo
+if (-not (Test-Path ".git")) {
+    Write-Host "`n[1/6] Initializing git repository..." -ForegroundColor Yellow
+    git init
+    Write-Host "Done." -ForegroundColor Green
+} else {
+    Write-Host "`n[1/6] Git repository already exists." -ForegroundColor DarkGray
+}
+
+# Make sure we're on the main branch
+Write-Host "[2/6] Setting up branch..." -ForegroundColor Yellow
+git checkout -b main 2>$null
+git branch -M main
+
+# Add the GitHub remote
+Write-Host "[3/6] Adding remote..." -ForegroundColor Yellow
+git remote remove origin 2>$null
+git remote add origin https://github.com/cobyfromhtc/ChronaProjectV2.git
+
+# Stage all files
+Write-Host "[4/6] Staging files..." -ForegroundColor Yellow
+git add -A
+
+# Commit with detailed message
+Write-Host "[5/6] Committing..." -ForegroundColor Yellow
+git commit -m "Update: Pocketbase SQLite migration + UI fixes + Wiki + README"
+
+# Push to GitHub (force push to overwrite)
+Write-Host "[6/6] Pushing to GitHub..." -ForegroundColor Yellow
+git push -u origin main --force
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "`n=== SUCCESS! ===" -ForegroundColor Green
+    Write-Host "https://github.com/cobyfromhtc/ChronaProjectV2`n" -ForegroundColor Green
+} else {
+    Write-Host "`n=== Auth error? Try: ===" -ForegroundColor Yellow
+    Write-Host "  git remote set-url origin https://<TOKEN>@github.com/cobyfromhtc/ChronaProjectV2.git" -ForegroundColor White
+    Write-Host "  (replace <TOKEN> with your GitHub Personal Access Token)`n" -ForegroundColor White
+}
+```
+
 ### Environment Variables
 
 ```env
