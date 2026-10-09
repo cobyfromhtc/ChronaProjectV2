@@ -1,0 +1,7 @@
+$ bun --hot index.ts
+[pocketbase-service] launching Pocketbase on 127.0.0.1:8090
+[pocketbase-service] binary: /home/z/my-project/mini-services/pocketbase-service/pocketbase
+[pocketbase-service] data dir: /home/z/my-project/mini-services/pocketbase-service/pb_data
+2026/10/09 02:46:58 Server started at http://127.0.0.1:8090
+├─ REST API: http://127.0.0.1:8090/api/
+└─ Admin UI: http://127.0.0.1:8090/_/

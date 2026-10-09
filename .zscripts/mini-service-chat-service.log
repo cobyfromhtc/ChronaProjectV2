@@ -1,0 +1,22 @@
+[chat-service] Installing dependencies...
+bun install v1.3.12 (700fc117)
+
+Checked 22 installs across 23 packages (no changes) [11.00ms]
+[chat-service] Running bun run dev...
+$ bun --hot index.ts
+==================================================
+Chrona Chat Service
+==================================================
+Environment: development
+Port: 3003
+Allowed CORS Origins: http://localhost:3000, http://127.0.0.1:3000
+==================================================
+Uncaught Exception: error: Failed to start server. Is port 3003 in use?
+ syscall: "listen",
+   errno: 0,
+    code: "EADDRINUSE"
+
+      at serve (unknown:1:1)
+      at node:_http_server:275:39
+      at node:_http_server:252:33
+
