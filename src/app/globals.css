@@ -1,0 +1,2120 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "../styles/ui-chrona-v2.css";
+@import "../styles/ui-chrona-v3.css";
+@import "../styles/ui-chrona-polish.css";
+@import "../styles/ui-chrona-polish2.css";
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant theme-dark (&:is(.theme-dark *));
+@custom-variant theme-midnight (&:is(.theme-midnight *));
+@custom-variant theme-forest (&:is(.theme-forest *));
+@custom-variant ui-chrona-v2 (&:is(.ui-chrona-v2 *));
+@custom-variant ui-chrona-v3 (&:is(.ui-chrona-v3 *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-mono);
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-ring: hsl(var(--ring));
+  --color-input: hsl(var(--input));
+  --color-border: hsl(var(--border));
+  --color-destructive: hsl(var(--destructive));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card: hsl(var(--card));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ========================================
+   Chrona Design System
+   Sophisticated Dark + Teal/Glassmorphism
+   ======================================== */
+
+:root {
+  --radius: 0.875rem;
+
+  /* Core Colors — Cyan/Teal Dark Theme
+     App background #0D1016, primary surface #151A22, elevated #1B222D */
+  --background: 222 30% 7%;
+  --foreground: 214 33% 96%;
+
+  /* Card & Surface — quiet, layered surface system */
+  --card: 217 23% 11%;
+  --card-foreground: 214 33% 96%;
+  --popover: 214 24% 14%;
+  --popover-foreground: 214 33% 96%;
+
+  /* Primary — Cyan/Teal #00CDBD (reserved for important actions & active states) */
+  --primary: 175 100% 40%;
+  --primary-foreground: 222 30% 7%;
+
+  /* Secondary — Elevated surface tone for secondary buttons/chips */
+  --secondary: 214 24% 14%;
+  --secondary-foreground: 214 33% 96%;
+
+  /* Muted — Subtle border surface & secondary text */
+  --muted: 211 21% 18%;
+  --muted-foreground: 213 16% 68%;
+
+  /* Accent — Same cyan/teal (kept consistent, used sparingly) */
+  --accent: 175 100% 40%;
+  --accent-foreground: 222 30% 7%;
+
+  /* Destructive */
+  --destructive: 0 84% 60%;
+
+  /* Border & Input — quiet, solid borders #2A3340 */
+  --border: 211 21% 21%;
+  --input: 211 21% 21%;
+  --ring: 175 100% 40%;
+
+  /* Chart Colors — cohesive cyan/teal family with warm + rose accents */
+  --chart-1: 175 100% 40%;
+  --chart-2: 200 80% 55%;
+  --chart-3: 35 80% 55%;
+  --chart-4: 340 65% 58%;
+  --chart-5: 160 70% 45%;
+
+  /* Sidebar — slightly deeper than app background for clear separation */
+  --sidebar: 222 30% 6%;
+  --sidebar-foreground: 214 33% 96%;
+  --sidebar-primary: 175 100% 40%;
+  --sidebar-primary-foreground: 222 30% 7%;
+  --sidebar-accent: 175 100% 40% / 0.12;
+  --sidebar-accent-foreground: 214 33% 96%;
+  --sidebar-border: 211 21% 21%;
+  --sidebar-ring: 175 100% 40%;
+}
+
+.dark,
+.theme-dark {
+  --background: 222 30% 7%;
+  --foreground: 214 33% 96%;
+  --card: 217 23% 11%;
+  --card-foreground: 214 33% 96%;
+  --popover: 214 24% 14%;
+  --popover-foreground: 214 33% 96%;
+  --primary: 175 100% 40%;
+  --primary-foreground: 222 30% 7%;
+  --secondary: 214 24% 14%;
+  --secondary-foreground: 214 33% 96%;
+  --muted: 211 21% 18%;
+  --muted-foreground: 213 16% 68%;
+  --accent: 175 100% 40%;
+  --accent-foreground: 222 30% 7%;
+  --destructive: 0 84% 60%;
+  --border: 211 21% 21%;
+  --input: 211 21% 21%;
+  --ring: 175 100% 40%;
+  --sidebar: 222 30% 6%;
+  --sidebar-foreground: 214 33% 96%;
+  --sidebar-primary: 175 100% 40%;
+  --sidebar-primary-foreground: 222 30% 7%;
+  --sidebar-accent: 175 100% 40% / 0.12;
+  --sidebar-accent-foreground: 214 33% 96%;
+  --sidebar-border: 211 21% 21%;
+  --sidebar-ring: 175 100% 40%;
+  --chart-1: 175 100% 40%;
+  --chart-2: 200 80% 55%;
+  --chart-3: 35 80% 55%;
+  --chart-4: 340 65% 58%;
+  --chart-5: 160 70% 45%;
+}
+
+/* Midnight theme — violet/fuchsia on deep purple-black */
+.dark.theme-midnight,
+.theme-midnight {
+  --background: 265 32% 5%;
+  --foreground: 265 25% 95%;
+  --card: 265 28% 9%;
+  --card-foreground: 265 25% 95%;
+  --popover: 265 26% 12%;
+  --popover-foreground: 265 25% 95%;
+  --primary: 268 83% 68%;
+  --primary-foreground: 265 35% 8%;
+  --secondary: 265 24% 14%;
+  --secondary-foreground: 265 22% 92%;
+  --muted: 265 22% 18%;
+  --muted-foreground: 265 16% 66%;
+  --accent: 292 80% 68%;
+  --accent-foreground: 265 35% 8%;
+  --destructive: 0 84% 60%;
+  --border: 265 22% 22%;
+  --input: 265 22% 22%;
+  --ring: 268 83% 68%;
+  --chart-1: 268 83% 68%;
+  --chart-2: 292 80% 68%;
+  --chart-3: 35 80% 55%;
+  --chart-4: 335 75% 62%;
+  --chart-5: 45 75% 50%;
+  --sidebar: 265 30% 4%;
+  --sidebar-foreground: 265 25% 95%;
+  --sidebar-primary: 268 83% 68%;
+  --sidebar-primary-foreground: 265 35% 8%;
+  --sidebar-accent: 268 83% 68% / 0.14;
+  --sidebar-accent-foreground: 265 25% 95%;
+  --sidebar-border: 265 22% 22%;
+  --sidebar-ring: 268 83% 68%;
+}
+
+.theme-midnight .persona-bg {
+  background:
+    radial-gradient(ellipse at 20% 20%, hsl(268 83% 68% / 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, hsl(292 80% 68% / 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, hsl(292 80% 68% / 0.03) 0%, transparent 70%),
+    linear-gradient(180deg, hsl(265 32% 5%) 0%, hsl(265 28% 9%) 50%, hsl(265 32% 5%) 100%);
+  background-attachment: fixed;
+}
+
+/* Forest theme — deep emerald/green undertones */
+.theme-forest {
+  --background: 150 25% 5%;
+  --foreground: 150 20% 95%;
+  --card: 150 22% 9%;
+  --card-foreground: 150 20% 95%;
+  --popover: 150 22% 12%;
+  --popover-foreground: 150 20% 95%;
+  --primary: 160 70% 45%;
+  --primary-foreground: 150 25% 7%;
+  --secondary: 150 20% 14%;
+  --secondary-foreground: 150 20% 90%;
+  --muted: 150 18% 18%;
+  --muted-foreground: 150 15% 62%;
+  --accent: 80 70% 50%;
+  --accent-foreground: 150 25% 7%;
+  --destructive: 0 84% 60%;
+  --border: 150 18% 22%;
+  --input: 150 18% 22%;
+  --ring: 160 70% 45%;
+  --chart-1: 160 70% 45%;
+  --chart-2: 140 60% 40%;
+  --chart-3: 80 70% 50%;
+  --chart-4: 35 80% 55%;
+  --chart-5: 45 75% 50%;
+  --sidebar: 150 22% 4%;
+  --sidebar-foreground: 150 20% 95%;
+  --sidebar-primary: 160 70% 45%;
+  --sidebar-primary-foreground: 150 25% 7%;
+  --sidebar-accent: 160 70% 45% / 0.14;
+  --sidebar-accent-foreground: 150 20% 95%;
+  --sidebar-border: 150 18% 22%;
+  --sidebar-ring: 160 70% 45%;
+}
+
+.theme-forest .persona-bg {
+  background:
+    radial-gradient(ellipse at 20% 20%, hsl(160 70% 45% / 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, hsl(140 60% 40% / 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, hsl(80 70% 50% / 0.03) 0%, transparent 70%),
+    linear-gradient(180deg, hsl(150 25% 5%) 0%, hsl(150 22% 9%) 50%, hsl(150 25% 5%) 100%);
+  background-attachment: fixed;
+}
+
+/* Light theme — clean light with subtle teal */
+.theme-light {
+  --background: 210 30% 97%;
+  --foreground: 222 30% 10%;
+  --card: 210 25% 95%;
+  --card-foreground: 222 30% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 30% 10%;
+  --primary: 175 100% 32%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 20% 90%;
+  --secondary-foreground: 222 30% 20%;
+  --muted: 210 18% 92%;
+  --muted-foreground: 210 12% 42%;
+  --accent: 175 100% 32%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 55%;
+  --border: 210 18% 86%;
+  --input: 210 18% 88%;
+  --ring: 175 100% 32%;
+  --chart-1: 175 100% 32%;
+  --chart-2: 200 80% 45%;
+  --chart-3: 35 80% 50%;
+  --chart-4: 340 65% 50%;
+  --chart-5: 45 75% 45%;
+  --sidebar: 210 25% 94%;
+  --sidebar-foreground: 222 30% 10%;
+  --sidebar-primary: 175 100% 32%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 175 100% 32% / 0.10;
+  --sidebar-accent-foreground: 222 30% 10%;
+  --sidebar-border: 210 18% 86%;
+  --sidebar-ring: 175 100% 32%;
+}
+
+.theme-light .persona-bg {
+  background:
+    radial-gradient(ellipse at 20% 20%, hsl(200 80% 45% / 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, hsl(160 70% 40% / 0.03) 0%, transparent 50%),
+    linear-gradient(180deg, hsl(210 20% 97%) 0%, hsl(210 15% 95%) 50%, hsl(210 20% 97%) 100%);
+  background-attachment: fixed;
+}
+
+.theme-light .persona-card,
+.theme-light .persona-glass {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.theme-light .persona-modal,
+.theme-light .glassmorphism-modal {
+  background: rgba(245, 247, 250, 0.92);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.theme-light .persona-glass {
+  background: rgba(245, 247, 250, 0.75);
+}
+
+.theme-light .persona-sidebar {
+  background: linear-gradient(180deg, hsl(210 15% 93%) 0%, hsl(210 15% 95%) 100%);
+  border-right-color: rgba(0, 0, 0, 0.08);
+}
+
+.theme-light .persona-sidebar::before {
+  background: radial-gradient(ellipse at 50% 0%, hsl(200 80% 45% / 0.06) 0%, transparent 70%);
+}
+
+.theme-light .persona-gradient-animated {
+  background: linear-gradient(
+    -45deg,
+    hsl(200 80% 45% / 0.08),
+    hsl(160 70% 40% / 0.05),
+    hsl(35 80% 50% / 0.03),
+    hsl(200 80% 45% / 0.06)
+  );
+}
+
+/* Midnight theme overrides for persona components */
+.theme-midnight .persona-card {
+  background: linear-gradient(135deg, hsl(265 28% 9% / 0.95) 0%, hsl(245 22% 12% / 0.95) 100%);
+}
+.theme-midnight .persona-card::before {
+  background: linear-gradient(90deg, transparent, hsl(268 83% 68% / 0.35), transparent);
+}
+.theme-midnight .persona-card-hover:hover {
+  border-color: hsl(268 83% 68% / 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px hsl(268 83% 68% / 0.08);
+}
+.theme-midnight .persona-glass {
+  background: hsl(265 28% 9% / 0.75);
+}
+.theme-midnight .btn-persona {
+  background: linear-gradient(135deg, hsl(268 83% 68%) 0%, hsl(282 76% 62%) 100%);
+}
+.theme-midnight .btn-persona:hover {
+  box-shadow: 0 10px 30px hsl(268 83% 68% / 0.25);
+}
+.theme-midnight .persona-gradient-text {
+  background: linear-gradient(135deg, hsl(268 83% 68%), hsl(282 76% 62%), hsl(292 80% 68%));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Forest theme overrides for persona components */
+.theme-forest .persona-card {
+  background: linear-gradient(135deg, hsl(150 22% 9% / 0.95) 0%, hsl(155 18% 12% / 0.95) 100%);
+}
+.theme-forest .persona-card::before {
+  background: linear-gradient(90deg, transparent, hsl(160 70% 45% / 0.35), transparent);
+}
+.theme-forest .persona-card-hover:hover {
+  border-color: hsl(160 70% 45% / 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px hsl(160 70% 45% / 0.08);
+}
+.theme-forest .persona-glass {
+  background: hsl(150 22% 9% / 0.75);
+}
+.theme-forest .btn-persona {
+  background: linear-gradient(135deg, hsl(160 70% 45%) 0%, hsl(140 60% 40%) 100%);
+}
+.theme-forest .btn-persona:hover {
+  box-shadow: 0 10px 30px hsl(160 70% 45% / 0.25);
+}
+.theme-forest .persona-gradient-text {
+  background: linear-gradient(135deg, hsl(160 70% 45%), hsl(140 60% 40%), hsl(80 70% 50%));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Light theme overrides for persona components */
+.theme-light .persona-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(240, 243, 247, 0.92) 100%);
+}
+.theme-light .persona-card::before {
+  background: linear-gradient(90deg, transparent, hsl(200 80% 45% / 0.25), transparent);
+}
+.theme-light .persona-card-hover:hover {
+  border-color: hsl(200 80% 45% / 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 30px hsl(200 80% 45% / 0.05);
+}
+.theme-light .btn-persona {
+  background: linear-gradient(135deg, hsl(200 80% 45%) 0%, hsl(190 70% 40%) 100%);
+}
+.theme-light .btn-persona:hover {
+  box-shadow: 0 10px 30px hsl(200 80% 45% / 0.15);
+}
+.theme-light .persona-gradient-text {
+  background: linear-gradient(135deg, hsl(200 80% 45%), hsl(190 70% 40%), hsl(160 70% 40%));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.theme-light .persona-nav-item::before {
+  background: linear-gradient(180deg, hsl(200 80% 45%), hsl(190 70% 40%));
+}
+.theme-light .persona-status-online::after {
+  border-color: hsl(210 15% 95%);
+}
+.theme-light .persona-status-offline::after {
+  border-color: hsl(210 15% 95%);
+}
+
+/* ========================================
+   MIDNIGHT THEME — Complete Component Overrides
+   ======================================== */
+.theme-midnight .persona-sidebar {
+  background: linear-gradient(180deg, hsl(240 28% 4%) 0%, hsl(265 30% 6%) 100%);
+  border-right-color: hsl(265 22% 22%);
+}
+.theme-midnight .persona-sidebar::before {
+  background: radial-gradient(ellipse at 50% 0%, hsl(268 83% 68% / 0.08) 0%, transparent 70%);
+}
+.theme-midnight .persona-modal,
+.theme-midnight .glassmorphism-modal {
+  background: hsl(265 28% 9% / 0.92);
+  border-color: hsl(265 22% 22%);
+}
+.theme-midnight .persona-input {
+  background: hsl(265 24% 12% / 0.6);
+  border-color: hsl(265 22% 22%);
+  color: hsl(265 25% 95%);
+}
+.theme-midnight .persona-input:focus {
+  border-color: hsl(268 83% 68% / 0.4);
+  box-shadow: 0 0 0 1px hsl(268 83% 68% / 0.2);
+}
+.theme-midnight .persona-input::placeholder {
+  color: hsl(265 16% 52%);
+}
+.theme-midnight .persona-nav-item {
+  color: hsl(265 16% 66%);
+}
+.theme-midnight .persona-nav-item:hover {
+  background: hsl(268 83% 68% / 0.08);
+  color: hsl(265 25% 95%);
+}
+.theme-midnight .persona-nav-item-active {
+  background: hsl(268 83% 68% / 0.12);
+  color: hsl(268 90% 78%);
+  border-color: hsl(268 83% 68% / 0.25);
+}
+.theme-midnight .persona-nav-item-active::before {
+  background: linear-gradient(180deg, hsl(268 83% 68%), hsl(282 76% 62%));
+}
+.theme-midnight .persona-dm-item {
+  color: hsl(240 15% 70%);
+}
+.theme-midnight .persona-dm-item:hover {
+  background: hsl(268 83% 68% / 0.06);
+}
+.theme-midnight .persona-dm-item-active {
+  background: hsl(268 83% 68% / 0.12);
+  color: hsl(265 25% 95%);
+}
+.theme-midnight .persona-section-header {
+  color: hsl(265 16% 52%);
+}
+.theme-midnight .persona-badge {
+  background: hsl(268 83% 68% / 0.1);
+  color: hsl(268 90% 78%);
+  border-color: hsl(268 83% 68% / 0.2);
+}
+.theme-midnight .persona-badge-primary {
+  background: hsl(268 83% 68% / 0.15);
+  color: hsl(268 90% 78%);
+}
+.theme-midnight .persona-status-online::after {
+  border-color: hsl(265 28% 9%);
+}
+.theme-midnight .persona-status-offline::after {
+  border-color: hsl(265 28% 9%);
+}
+.theme-midnight .persona-message:hover {
+  background: hsl(268 83% 68% / 0.03);
+}
+.theme-midnight .persona-favourite {
+  color: hsl(45 75% 50%);
+}
+.theme-midnight .persona-empty-state {
+  color: hsl(265 16% 46%);
+}
+.theme-midnight .persona-gradient-animated {
+  background: linear-gradient(-45deg,
+    hsl(268 83% 68% / 0.08),
+    hsl(282 76% 62% / 0.05),
+    hsl(292 80% 68% / 0.04),
+    hsl(268 83% 68% / 0.06));
+}
+
+/* ========================================
+   FOREST THEME — Complete Component Overrides
+   ======================================== */
+.theme-forest .persona-sidebar {
+  background: linear-gradient(180deg, hsl(150 22% 4%) 0%, hsl(150 20% 6%) 100%);
+  border-right-color: hsl(150 18% 22%);
+}
+.theme-forest .persona-sidebar::before {
+  background: radial-gradient(ellipse at 50% 0%, hsl(160 70% 45% / 0.08) 0%, transparent 70%);
+}
+.theme-forest .persona-modal,
+.theme-forest .glassmorphism-modal {
+  background: hsl(150 22% 9% / 0.92);
+  border-color: hsl(150 18% 22%);
+}
+.theme-forest .persona-input {
+  background: hsl(150 20% 12% / 0.6);
+  border-color: hsl(150 18% 22%);
+  color: hsl(150 20% 95%);
+}
+.theme-forest .persona-input:focus {
+  border-color: hsl(160 70% 45% / 0.4);
+  box-shadow: 0 0 0 1px hsl(160 70% 45% / 0.2);
+}
+.theme-forest .persona-input::placeholder {
+  color: hsl(150 15% 50%);
+}
+.theme-forest .persona-nav-item {
+  color: hsl(150 15% 62%);
+}
+.theme-forest .persona-nav-item:hover {
+  background: hsl(160 70% 45% / 0.08);
+  color: hsl(150 20% 95%);
+}
+.theme-forest .persona-nav-item-active {
+  background: hsl(160 70% 45% / 0.12);
+  color: hsl(160 70% 60%);
+  border-color: hsl(160 70% 45% / 0.25);
+}
+.theme-forest .persona-nav-item-active::before {
+  background: linear-gradient(180deg, hsl(160 70% 45%), hsl(140 60% 40%));
+}
+.theme-forest .persona-dm-item {
+  color: hsl(150 15% 68%);
+}
+.theme-forest .persona-dm-item:hover {
+  background: hsl(160 70% 45% / 0.06);
+}
+.theme-forest .persona-dm-item-active {
+  background: hsl(160 70% 45% / 0.12);
+  color: hsl(150 20% 95%);
+}
+.theme-forest .persona-section-header {
+  color: hsl(150 15% 48%);
+}
+.theme-forest .persona-badge {
+  background: hsl(160 70% 45% / 0.1);
+  color: hsl(160 70% 55%);
+  border-color: hsl(160 70% 45% / 0.2);
+}
+.theme-forest .persona-badge-primary {
+  background: hsl(160 70% 45% / 0.15);
+  color: hsl(160 70% 55%);
+}
+.theme-forest .persona-status-online::after {
+  border-color: hsl(150 22% 9%);
+}
+.theme-forest .persona-status-offline::after {
+  border-color: hsl(150 22% 9%);
+}
+.theme-forest .persona-message:hover {
+  background: hsl(160 70% 45% / 0.03);
+}
+.theme-forest .persona-favourite {
+  color: hsl(45 75% 50%);
+}
+.theme-forest .persona-empty-state {
+  color: hsl(150 15% 42%);
+}
+.theme-forest .persona-gradient-animated {
+  background: linear-gradient(-45deg,
+    hsl(160 70% 45% / 0.08),
+    hsl(140 60% 40% / 0.05),
+    hsl(80 70% 50% / 0.04),
+    hsl(160 70% 45% / 0.06));
+}
+
+/* ========================================
+   LIGHT THEME — Additional Component Overrides
+   ======================================== */
+.theme-light .persona-input {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: hsl(222 30% 15%);
+}
+.theme-light .persona-input:focus {
+  border-color: hsl(200 80% 45% / 0.4);
+  box-shadow: 0 0 0 1px hsl(200 80% 45% / 0.15);
+}
+.theme-light .persona-input::placeholder {
+  color: hsl(210 12% 55%);
+}
+.theme-light .persona-nav-item {
+  color: hsl(210 12% 45%);
+}
+.theme-light .persona-nav-item:hover {
+  background: hsl(200 80% 45% / 0.06);
+  color: hsl(222 30% 20%);
+}
+.theme-light .persona-nav-item-active {
+  background: hsl(200 80% 45% / 0.1);
+  color: hsl(200 80% 40%);
+}
+.theme-light .persona-dm-item {
+  color: hsl(210 12% 40%);
+}
+.theme-light .persona-dm-item:hover {
+  background: hsl(200 80% 45% / 0.05);
+}
+.theme-light .persona-dm-item-active {
+  background: hsl(200 80% 45% / 0.1);
+  color: hsl(222 30% 15%);
+}
+.theme-light .persona-section-header {
+  color: hsl(210 12% 50%);
+}
+.theme-light .persona-badge {
+  background: hsl(200 80% 45% / 0.08);
+  color: hsl(200 80% 40%);
+  border-color: hsl(200 80% 45% / 0.15);
+}
+.theme-light .persona-badge-primary {
+  background: hsl(200 80% 45% / 0.12);
+  color: hsl(200 80% 38%);
+}
+.theme-light .persona-message:hover {
+  background: hsl(200 80% 45% / 0.03);
+}
+.theme-light .persona-favourite {
+  color: hsl(45 75% 45%);
+}
+.theme-light .persona-empty-state {
+  color: hsl(210 12% 55%);
+}
+.theme-light .btn-persona {
+  color: hsl(0 0% 100%);
+}
+.theme-light .persona-card {
+  color: hsl(222 30% 15%);
+}
+.theme-light .persona-card-hover:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px hsl(200 80% 45% / 0.12);
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  *:focus-visible {
+    @apply outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01", "ss03";
+  }
+}
+
+/* ========================================
+   Custom Scrollbar - Cyan/Teal Dark Theme
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.6);
+}
+
+/* Custom scrollbar class for modals - always visible */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 5px;
+  min-height: 40px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.6);
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ========================================
+   Animated Background Effects
+   ======================================== */
+
+@keyframes persona-gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.6;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Background with subtle pattern */
+.persona-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, hsl(var(--primary) / 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, hsl(var(--primary) / 0.04) 0%, transparent 60%),
+    hsl(var(--background));
+  background-attachment: fixed;
+}
+
+/* Animated gradient background */
+.persona-gradient-animated {
+  background: linear-gradient(
+    -45deg,
+    hsl(var(--primary) / 0.08),
+    hsl(var(--accent) / 0.05),
+    hsl(var(--primary) / 0.07)
+  );
+  background-size: 400% 400%;
+  animation: persona-gradient 20s ease infinite;
+}
+
+/* ========================================
+   Glass & Card Effects
+   ======================================== */
+
+.persona-glass {
+  background: hsl(var(--card) / 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid hsl(var(--border));
+}
+
+.persona-glass-light {
+  background: hsl(var(--secondary) / 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.6);
+}
+
+.persona-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.persona-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.4), transparent);
+}
+
+/* Card hover effect — subtle lift, no glow */
+.persona-card-hover {
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.persona-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: hsl(var(--primary) / 0.45);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* ========================================
+   Button Styles
+   ======================================== */
+
+/* Primary button — solid cyan/teal, no shimmer */
+.btn-persona {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-weight: 600;
+  border-radius: 0.625rem;
+  padding: 0.5rem 1.125rem;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  font-size: 0.875rem;
+}
+
+.btn-persona:hover {
+  background: hsl(var(--primary) / 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px hsl(var(--primary) / 0.2);
+}
+
+.btn-persona:active {
+  transform: translateY(0);
+}
+
+/* Secondary button — quiet surface with subtle border */
+.btn-persona-secondary {
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+  font-weight: 500;
+  border-radius: 0.625rem;
+  padding: 0.5rem 1.125rem;
+  border: 1px solid hsl(var(--border));
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.btn-persona-secondary:hover {
+  background: hsl(var(--secondary) / 0.7);
+  border-color: hsl(var(--primary) / 0.5);
+  color: hsl(var(--primary));
+}
+
+/* Ghost button — minimal hover */
+.btn-persona-ghost {
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  border-radius: 0.625rem;
+  padding: 0.5rem 1.125rem;
+  transition: background 0.2s ease, color 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.btn-persona-ghost:hover {
+  background: hsl(var(--primary) / 0.08);
+  color: hsl(var(--primary));
+}
+
+/* Custom Electron top bar */
+.topbar {
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--background) / 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.window-btn, .window-btn-red {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid hsl(var(--border));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--secondary) / 0.5);
+}
+
+.window-btn:hover, .window-btn-red:hover {
+  background: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary) / 0.4);
+  color: hsl(var(--primary));
+}
+
+.window-btn-red {
+  color: hsl(0 84% 70%);
+}
+
+.window-btn-red:hover {
+  background: hsl(0 84% 50% / 0.25);
+  color: hsl(0 84% 75%);
+  border-color: hsl(0 84% 50% / 0.4);
+}
+
+.window-btn, .window-btn-red {
+  -webkit-app-region: no-drag;
+}
+
+/* ========================================
+   Tab Styles
+   ======================================== */
+
+.persona-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: hsl(var(--muted) / 0.5);
+  padding: 0.25rem;
+  border-radius: 0.625rem;
+  border: 1px solid hsl(var(--border));
+}
+
+.persona-tab {
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+  transition: background 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.persona-tab:hover {
+  background: hsl(var(--primary) / 0.08);
+  color: hsl(var(--foreground));
+}
+
+.persona-tab-active {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* ========================================
+   Category Pills
+   ======================================== */
+
+.persona-pill {
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: hsl(var(--secondary) / 0.6);
+  color: hsl(var(--muted-foreground));
+  border: 1px solid hsl(var(--border));
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.persona-pill:hover {
+  background: hsl(var(--primary) / 0.10);
+  border-color: hsl(var(--primary) / 0.35);
+  color: hsl(var(--foreground));
+}
+
+.persona-pill-active {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: transparent;
+}
+
+/* ========================================
+   Input Styles
+   ======================================== */
+
+.persona-input {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.625rem;
+  color: hsl(var(--foreground));
+  padding: 0.625rem 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.persona-input::placeholder {
+  color: hsl(var(--muted-foreground) / 0.7);
+}
+
+.persona-input:focus {
+  outline: none;
+  border-color: hsl(var(--primary) / 0.6);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.18);
+}
+
+/* Select dropdown styling */
+.persona-input option,
+select option {
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  padding: 0.5rem;
+}
+
+.persona-input option:hover,
+.persona-input option:checked,
+select option:hover,
+select option:checked {
+  background: hsl(var(--primary) / 0.22);
+  color: hsl(var(--primary-foreground));
+}
+
+/* Select dropdown arrow styling */
+select.persona-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300CDBD' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+/* Generic select in persona components */
+select[class*="purple"],
+select[class*="bg-purple"] {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300CDBD' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+/* ========================================
+   Sidebar Styles
+   ======================================== */
+
+.persona-sidebar {
+  background: hsl(var(--sidebar));
+  border-right: 1px solid hsl(var(--border));
+  position: relative;
+}
+
+.persona-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 160px;
+  background: radial-gradient(ellipse at 50% 0%, hsl(var(--primary) / 0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Sidebar navigation item */
+.persona-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: background 0.18s ease, color 0.18s ease;
+  position: relative;
+}
+
+.persona-nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  bottom: 50%;
+  width: 2px;
+  background: hsl(var(--primary));
+  transform: translateY(-50%) scaleY(0);
+  transition: transform 0.18s ease;
+  border-radius: 0 2px 2px 0;
+}
+
+.persona-nav-item:hover {
+  background: hsl(var(--primary) / 0.08);
+  color: hsl(var(--foreground));
+}
+
+.persona-nav-item-active {
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--foreground));
+}
+
+.persona-nav-item-active::before {
+  transform: translateY(-50%) scaleY(1);
+  height: 60%;
+  top: 50%;
+  bottom: auto;
+}
+
+/* DM item in sidebar */
+.persona-dm-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: background 0.18s ease;
+  cursor: pointer;
+}
+
+.persona-dm-item:hover {
+  background: hsl(var(--primary) / 0.08);
+}
+
+.persona-dm-item-active {
+  background: hsl(var(--primary) / 0.12);
+  border-left: 2px solid hsl(var(--primary));
+}
+
+/* ========================================
+   Online Status Indicator
+   ======================================== */
+
+.persona-status {
+  position: relative;
+  display: inline-block;
+}
+
+.persona-status-online::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  background: hsl(160 84% 39%);
+  border: 2px solid hsl(var(--card));
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.persona-status-offline::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  background: hsl(var(--muted-foreground) / 0.6);
+  border: 2px solid hsl(var(--card));
+  border-radius: 50%;
+  z-index: 10;
+}
+
+@keyframes pulse-status {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(160 84% 39% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px hsl(160 84% 39% / 0);
+  }
+}
+
+/* ========================================
+   Avatar Styles
+   ======================================== */
+
+.persona-avatar {
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.persona-avatar:hover::after {
+  opacity: 1;
+}
+
+.persona-avatar-glow {
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4);
+}
+
+/* ========================================
+   Section Headers
+   ======================================== */
+
+.persona-section-header {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ========================================
+   Search Bar
+   ======================================== */
+
+.persona-search {
+  background: hsl(var(--secondary) / 0.4);
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.persona-search:hover {
+  background: hsl(var(--primary) / 0.08);
+  border-color: hsl(var(--primary) / 0.35);
+  color: hsl(var(--foreground));
+}
+
+/* ========================================
+   User Panel (bottom of sidebar)
+   ======================================== */
+
+.persona-user-panel {
+  background: hsl(var(--secondary) / 0.3);
+  border-top: 1px solid hsl(var(--border));
+  padding: 0.625rem;
+}
+
+/* ========================================
+   Badge
+   ======================================== */
+
+.persona-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.persona-badge-primary {
+  background: hsl(var(--primary) / 0.15);
+  color: hsl(var(--primary));
+  border: 1px solid hsl(var(--primary) / 0.3);
+}
+
+.persona-badge-success {
+  background: hsl(160 84% 39% / 0.15);
+  color: hsl(151 81% 73%);
+  border: 1px solid hsl(160 84% 39% / 0.3);
+}
+
+.persona-badge-accent {
+  background: hsl(35 80% 55% / 0.15);
+  color: hsl(35 80% 72%);
+  border: 1px solid hsl(35 80% 55% / 0.3);
+}
+
+/* ========================================
+   Gradient Text
+   ======================================== */
+
+.persona-gradient-text {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+}
+
+/* ========================================
+   Loading States
+   ======================================== */
+
+.persona-skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted) / 0.4) 0%,
+    hsl(var(--muted) / 0.6) 50%,
+    hsl(var(--muted) / 0.4) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ========================================
+   Decorative Elements
+   ======================================== */
+
+/* Sparkle/star decorations */
+.persona-sparkle {
+  position: relative;
+}
+
+.persona-sparkle::before,
+.persona-sparkle::after {
+  content: '✦';
+  position: absolute;
+  font-size: 0.5rem;
+  color: hsl(var(--primary));
+  opacity: 0.5;
+  animation: sparkle-float 3s ease-in-out infinite;
+}
+
+.persona-sparkle::before {
+  top: -0.25rem;
+  right: -0.25rem;
+  animation-delay: 0s;
+}
+
+.persona-sparkle::after {
+  bottom: -0.25rem;
+  left: -0.25rem;
+  animation-delay: 1.5s;
+}
+
+@keyframes sparkle-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-4px) rotate(45deg);
+    opacity: 0.9;
+  }
+}
+
+/* Divider with gradient */
+.persona-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
+  margin: 1rem 0;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.persona-animate-in {
+  animation: fadeSlideIn 0.3s ease-out;
+}
+
+.persona-animate-slide {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.persona-animate-scale {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* Discovery row cards — entrance with stagger (delay set inline per card) */
+@keyframes rowCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.discovery-row-card {
+  animation: rowCardIn 0.35s ease-out backwards;
+}
+
+/* Message bubble */
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.persona-message {
+  animation: messageIn 0.2s ease-out;
+}
+
+/* ========================================
+   Empty States
+   ======================================== */
+
+.persona-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  width: 100%;
+}
+
+.persona-empty-state-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: hsl(var(--primary) / 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: hsl(var(--primary));
+}
+
+/* ========================================
+   Modal Styles — Glassmorphism
+   ======================================== */
+
+.persona-modal {
+  background: hsl(var(--popover) / 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid hsl(var(--border));
+  border-radius: 1.25rem;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+}
+
+/* Subtle top accent on modal */
+.persona-modal::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.4), transparent);
+  pointer-events: none;
+  border-radius: 1.25rem 1.25rem 0 0;
+}
+
+/* Dedicated Glassmorphism Modal class */
+.glassmorphism-modal {
+  background: hsl(var(--popover) / 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid hsl(var(--border));
+  border-radius: 1.25rem;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+}
+
+.glassmorphism-modal::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.4), transparent);
+  pointer-events: none;
+  border-radius: 1.25rem 1.25rem 0 0;
+}
+
+.persona-modal-header {
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 1.25rem 1.5rem;
+}
+
+.persona-modal-content {
+  padding: 1.5rem;
+}
+
+/* ========================================
+   Glassmorphism Top Bar
+   ======================================== */
+
+.glassmorphism-topbar {
+  background: hsl(var(--background) / 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+/* ========================================
+   Featured Banner Progress Bar
+   ======================================== */
+
+@keyframes progressBar {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* ========================================
+   Tooltip
+   ======================================== */
+
+.persona-tooltip {
+  background: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: hsl(var(--popover-foreground));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* ========================================
+   Favourite Star
+   ======================================== */
+
+.persona-favourite {
+  color: hsl(45 96% 56%);
+  filter: drop-shadow(0 0 4px hsl(45 96% 56% / 0.5));
+}
+
+/* ========================================
+   Responsive Utilities
+   ======================================== */
+
+@media (max-width: 768px) {
+  .persona-sidebar {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* ========================================
+   Profile Dropdown Animation
+   ======================================== */
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ========================================
+   Scenario & Modal Styling Animations
+   ======================================== */
+
+/* Heart burst animation for like button */
+@keyframes heart-burst {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(0.95); }
+  75% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* Animated gradient border rotation */
+@keyframes gradient-border-rotate {
+  0% { --gradient-angle: 0deg; }
+  100% { --gradient-angle: 360deg; }
+}
+
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Pulse glow for online badge */
+@keyframes online-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(160 84% 39% / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px hsl(160 84% 39% / 0);
+  }
+}
+
+/* Skeleton loading pulse */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Featured shimmer */
+@keyframes featured-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Spectrum bar fill animation */
+@keyframes spectrum-fill {
+  from {
+    width: 0%;
+  }
+}
+
+/* Button shimmer effect */
+@keyframes btn-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Enneagram star rotate */
+@keyframes enneagram-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reaction pop — when a reaction chip appears */
+@keyframes reaction-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Fade in — generic */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fade in scale — for modals and menus */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Slide up — for toast notifications */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbar — thin and on-brand */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+/* Focus ring — consistent primary-tinted focus */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary) / 0.5);
+  border-radius: inherit;
+}
+
+/* mark tag — for search highlighting */
+mark {
+  background: hsl(var(--primary) / 0.25);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+/* ========================================
+   Micro-interactions & Polish
+   ======================================== */
+
+/* Button press effect — subtle scale-down on active */
+button:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.985);
+  transition: transform 0.05s ease;
+}
+
+/* Tab transition — smooth color fade */
+persona-nav-item, .persona-dm-item {
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+/* Avatar hover — subtle ring expansion */
+.persona-status:hover img {
+  transition: transform 0.2s ease;
+}
+
+/* Modal backdrop fade-in */
+.fixed.inset-0.bg-black\/70,
+.fixed.inset-0.bg-black\/60,
+.fixed.inset-0.bg-black\/50 {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Scrollbar for the whole app — thin and subtle */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Line clamp utility (if not already available) */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Selection color */
+::selection {
+  background: hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary-foreground));
+}
+
+/* ========================================
+   Presence & Online Indicator Polish
+   ======================================== */
+
+/* Refined online pulse — subtler, two-stage ring */
+@keyframes online-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+  }
+}
+
+/* Apply to online status dots */
+.persona-status-online .absolute.bottom-0.right-0,
+.persona-status-online ~ span[class*="bg-emerald"] {
+  animation: online-pulse-ring 2s ease-out infinite;
+}
+
+/* Smooth message highlight when jumped-to */
+.persona-message[class*="ring-primary"] {
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  background-color: hsl(var(--primary) / 0.06);
+}
+
+/* Typing dots — synchronized bounce */
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+
+/* Empty state icon glow */
+.persona-empty-state-icon {
+  position: relative;
+}
+.persona-empty-state-icon::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Card hover — subtle border glow on interactive cards */
+.persona-card-hover:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), 0 0 0 1px hsl(var(--primary) / 0.1);
+}
+
+/* Dropdown menu entrance */
+[style*="fadeInScale"] {
+  transform-origin: top right;
+}
+
+/* Tooltip polish */
+[data-radix-popper-content-wrapper] * {
+  pointer-events: auto;
+}
+
+/* Button shimmer on hover (primary buttons) */
+.btn-persona {
+  position: relative;
+  overflow: hidden;
+}
+.btn-persona::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary-foreground) / 0.15), transparent);
+  transition: left 0.5s ease;
+}
+.btn-persona:hover::before {
+  left: 100%;
+}
+
+/* ========================================
+   LIGHT THEME — Hard-coded Utility Adaptation
+   The app was designed dark-first; many components use slate/white
+   utilities tuned for dark surfaces. Under .theme-light we remap
+   those exact tokens to light-appropriate values so every surface
+   (text, chips, borders, hovers, inputs, bubbles) stays readable.
+   Token-exact attribute selectors keep hover:/group-hover: variants
+   working without bleeding into other utilities.
+   ======================================== */
+
+/* --- Text tokens --- */
+.theme-light [class~="text-slate-100"] { color: hsl(222 33% 14%); }
+.theme-light [class~="text-slate-200"] { color: hsl(222 26% 20%); }
+.theme-light [class~="text-slate-300"] { color: hsl(222 20% 30%); }
+.theme-light [class~="text-slate-400"] { color: hsl(215 15% 40%); }
+.theme-light [class~="text-slate-500"] { color: hsl(215 14% 48%); }
+.theme-light [class~="text-slate-600"] { color: hsl(215 13% 57%); }
+.theme-light [class~="text-slate-700"] { color: hsl(215 13% 66%); }
+.theme-light [class~="text-slate-50"] { color: hsl(222 30% 11%); }
+
+/* Text with opacity modifiers */
+.theme-light [class~="text-slate-100/90"] { color: rgba(26, 34, 51, 0.9); }
+.theme-light [class~="text-slate-200/80"] { color: rgba(30, 38, 55, 0.8); }
+.theme-light [class~="text-slate-200/90"] { color: rgba(30, 38, 55, 0.9); }
+.theme-light [class~="text-slate-300/80"] { color: rgba(41, 50, 66, 0.75); }
+.theme-light [class~="text-slate-300/70"] { color: rgba(41, 50, 66, 0.68); }
+.theme-light [class~="text-slate-300/60"] { color: rgba(41, 50, 66, 0.6); }
+.theme-light [class~="text-slate-300/50"] { color: rgba(41, 50, 66, 0.5); }
+.theme-light [class~="text-slate-400/80"] { color: rgba(71, 85, 105, 0.8); }
+.theme-light [class~="text-slate-400/70"] { color: rgba(71, 85, 105, 0.72); }
+.theme-light [class~="text-slate-400/40"] { color: rgba(71, 85, 105, 0.45); }
+.theme-light [class~="text-slate-400/30"] { color: rgba(71, 85, 105, 0.38); }
+.theme-light [class~="text-slate-400/25"] { color: rgba(71, 85, 105, 0.32); }
+.theme-light [class~="text-slate-500/40"] { color: rgba(100, 116, 139, 0.5); }
+.theme-light [class~="text-slate-500/30"] { color: rgba(100, 116, 139, 0.4); }
+
+/* Hover text tokens */
+.theme-light [class~="hover:text-slate-100"]:hover { color: hsl(222 33% 14%); }
+.theme-light [class~="hover:text-slate-200"]:hover { color: hsl(222 26% 20%); }
+.theme-light [class~="hover:text-slate-300"]:hover { color: hsl(222 20% 30%); }
+.theme-light [class~="hover:text-slate-400"]:hover { color: hsl(215 15% 40%); }
+
+/* Group-hover text tokens */
+.theme-light .group:hover [class~="group-hover:text-slate-100"] { color: hsl(222 33% 14%); }
+.theme-light .group:hover [class~="group-hover:text-slate-200"] { color: hsl(222 26% 20%); }
+.theme-light .group:hover [class~="group-hover:text-slate-300"] { color: hsl(222 20% 30%); }
+.theme-light .group:hover [class~="group-hover:text-slate-400"] { color: hsl(215 15% 40%); }
+
+/* Placeholder tokens */
+.theme-light [class~="placeholder:text-slate-600"]::placeholder { color: rgba(100, 116, 139, 0.55); }
+.theme-light [class~="placeholder:text-slate-500"]::placeholder { color: rgba(100, 116, 139, 0.65); }
+.theme-light [class~="placeholder:text-slate-400"]::placeholder { color: rgba(100, 116, 139, 0.75); }
+
+/* --- Surface fills (white-alpha → dark-alpha) --- */
+.theme-light [class~="bg-white/[0.01]"] { background-color: rgba(15, 23, 42, 0.02); }
+.theme-light [class~="bg-white/[0.02]"] { background-color: rgba(15, 23, 42, 0.035); }
+.theme-light [class~="bg-white/[0.03]"] { background-color: rgba(15, 23, 42, 0.05); }
+.theme-light [class~="bg-white/[0.04]"] { background-color: rgba(15, 23, 42, 0.065); }
+.theme-light [class~="bg-white/[0.05]"] { background-color: rgba(15, 23, 42, 0.075); }
+.theme-light [class~="bg-white/[0.06]"] { background-color: rgba(15, 23, 42, 0.09); }
+.theme-light [class~="bg-white/[0.08]"] { background-color: rgba(15, 23, 42, 0.11); }
+.theme-light [class~="bg-white/5"] { background-color: rgba(15, 23, 42, 0.06); }
+.theme-light [class~="bg-white/10"] { background-color: rgba(15, 23, 42, 0.1); }
+
+/* Hover surface fills */
+.theme-light [class~="hover:bg-white/[0.02]"]:hover { background-color: rgba(15, 23, 42, 0.04); }
+.theme-light [class~="hover:bg-white/[0.03]"]:hover { background-color: rgba(15, 23, 42, 0.055); }
+.theme-light [class~="hover:bg-white/[0.04]"]:hover { background-color: rgba(15, 23, 42, 0.07); }
+.theme-light [class~="hover:bg-white/[0.05]"]:hover { background-color: rgba(15, 23, 42, 0.08); }
+.theme-light [class~="hover:bg-white/[0.06]"]:hover { background-color: rgba(15, 23, 42, 0.095); }
+.theme-light [class~="hover:bg-white/[0.08]"]:hover { background-color: rgba(15, 23, 42, 0.115); }
+.theme-light [class~="hover:bg-white/[0.1]"]:hover { background-color: rgba(15, 23, 42, 0.13); }
+.theme-light [class~="hover:bg-white/[0.10]"]:hover { background-color: rgba(15, 23, 42, 0.13); }
+.theme-light [class~="hover:bg-white"]:hover { background-color: rgba(15, 23, 42, 0.07); }
+
+/* --- Borders (white-alpha → dark-alpha) --- */
+.theme-light [class~="border-white/[0.04]"] { border-color: rgba(15, 23, 42, 0.07); }
+.theme-light [class~="border-white/[0.05]"] { border-color: rgba(15, 23, 42, 0.08); }
+.theme-light [class~="border-white/[0.06]"] { border-color: rgba(15, 23, 42, 0.10); }
+.theme-light [class~="border-white/[0.08]"] { border-color: rgba(15, 23, 42, 0.13); }
+.theme-light [class~="border-white/[0.1]"] { border-color: rgba(15, 23, 42, 0.15); }
+.theme-light [class~="border-white/[0.10]"] { border-color: rgba(15, 23, 42, 0.15); }
+.theme-light [class~="border-white/[0.12]"] { border-color: rgba(15, 23, 42, 0.17); }
+.theme-light [class~="border-white/[0.15]"] { border-color: rgba(15, 23, 42, 0.20); }
+.theme-light [class~="border-white/10"] { border-color: rgba(15, 23, 42, 0.15); }
+.theme-light [class~="border-white/20"] { border-color: rgba(15, 23, 42, 0.25); }
+
+/* Hover borders */
+.theme-light [class~="hover:border-white/[0.08]"]:hover { border-color: rgba(15, 23, 42, 0.16); }
+.theme-light [class~="hover:border-white/[0.1]"]:hover { border-color: rgba(15, 23, 42, 0.18); }
+.theme-light [class~="hover:border-white/[0.10]"]:hover { border-color: rgba(15, 23, 42, 0.18); }
+.theme-light [class~="hover:border-white/[0.12]"]:hover { border-color: rgba(15, 23, 42, 0.21); }
+.theme-light [class~="hover:border-white/[0.15]"]:hover { border-color: rgba(15, 23, 42, 0.24); }
+
+/* --- Dark translucent blocks → soft ink tints --- */
+.theme-light [class~="bg-black/20"] { background-color: rgba(15, 23, 42, 0.04); }
+.theme-light [class~="bg-black/30"] { background-color: rgba(15, 23, 42, 0.06); }
+.theme-light [class~="bg-black/40"] { background-color: rgba(15, 23, 42, 0.08); }
+
+/* --- Hard-coded dark hex surfaces → themed card --- */
+.theme-light [class~="bg-[#0e1015]"],
+.theme-light [class~="bg-[#100e0d]"],
+.theme-light [class~="bg-[#0f1117]"],
+.theme-light [class~="bg-[#0d0f14]"],
+.theme-light [class~="bg-[#0b0d11]"],
+.theme-light [class~="bg-[#1a1714]"],
+.theme-light [class~="bg-[#1a1f2e]"],
+.theme-light [class~="bg-[#0c0a09]"],
+.theme-light [class~="bg-[#1a1625]"],
+.theme-light [class~="bg-[#0d1017]"],
+.theme-light [class~="bg-[#0e0d14]"],
+.theme-light [class~="bg-[#0d0a0b]"],
+.theme-light [class~="bg-[#14121e]"],
+.theme-light [class~="bg-[#12141a]"],
+.theme-light [class~="bg-[#110e0c]"],
+.theme-light [class~="bg-[#0d0b09]"],
+.theme-light [class~="bg-[#0a0d12]"],
+.theme-light [class~="bg-[#1a1c24]"],
+.theme-light [class~="bg-[#1a1c22]"] {
+  background-color: hsl(var(--card));
+}
+
+/* Hard-coded dark hex borders → themed border */
+.theme-light [class~="border-[#0f1117]"],
+.theme-light [class~="border-[#100e0d]"],
+.theme-light [class~="border-[#0e1015]"],
+.theme-light [class~="border-[#0d0f14]"],
+.theme-light [class~="border-[#0e0d14]"],
+.theme-light [class~="border-[#0d1017]"],
+.theme-light [class~="border-[#0d0a0b]"],
+.theme-light [class~="border-[#110e0c]"],
+.theme-light [class~="border-[#0d0b09]"] {
+  border-color: hsl(var(--border));
+}
+
+/* Light theme: softer shadows (hard-coded dark glows are invisible on white anyway) */
+.theme-light .persona-card-hover:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10), 0 0 0 1px hsl(var(--primary) / 0.12);
+}
+.theme-light .persona-modal,
+.theme-light .glassmorphism-modal {
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+}
+.theme-light .persona-tooltip {
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+/* Light theme: message bubbles keep contrast */
+.theme-light .persona-message[class*="ring-primary"] {
+  background-color: hsl(var(--primary) / 0.08);
+}
+
+/* =============================================================
+   My Chats — horizontal card row (home dashboard)
+   Slim, auto-hiding scrollbar with themed gradient thumb
+   ============================================================= */
+.my-chats-row {
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.35) transparent;
+}
+.my-chats-row::-webkit-scrollbar {
+  height: 6px;
+}
+.my-chats-row::-webkit-scrollbar-track {
+  background: transparent;
+}
+.my-chats-row::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.25);
+  border-radius: 9999px;
+}
+.my-chats-row:hover::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.45);
+}
+.my-chats-row::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.6);
+}
+
+/* =============================================================
+   Realtime message entrance animation (channel + thread)
+   Applied to messages that arrive after initial load — subtle
+   rise + fade so new (sent or received) messages feel live.
+   ============================================================= */
+@keyframes message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.message-enter {
+  animation: message-enter 260ms cubic-bezier(0.21, 1.02, 0.73, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .message-enter {
+    animation: none;
+  }
+}

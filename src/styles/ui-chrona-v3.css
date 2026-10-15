@@ -1,0 +1,263 @@
+/* ========================================
+   Chrona V3 — "Zen"
+   Calm, focused, centered layout.
+   Rose/fuchsia accents over soft ambient gradients.
+   ======================================== */
+
+.ui-chrona-v3 {
+  --v3-accent: 347 89% 62%;        /* rose     */
+  --v3-accent-2: 292 80% 68%;      /* fuchsia  */
+}
+
+/* ─── Ambient background ─────────────────────────────────
+   A calm wash of rose/fuchsia auroras over the theme base.
+   The floating orbs themselves are framer-motion driven. */
+.ui-chrona-v3 .v3-ambient-bg {
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -10%, hsl(347 89% 60% / 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 100% 100%, hsl(292 80% 62% / 0.06) 0%, transparent 55%),
+    hsl(var(--background));
+}
+
+/* ─── Top bar ──────────────────────────────────────────── */
+.ui-chrona-v3 .v3-topbar {
+  background: hsl(var(--background) / 0.68);
+  backdrop-filter: blur(22px) saturate(1.3);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+}
+
+/* ─── Nav pills ────────────────────────────────────────── */
+.ui-chrona-v3 .v3-nav-pill-track {
+  padding: 0.3rem;
+  border-radius: 9999px;
+  background: hsl(var(--muted) / 0.4);
+  border: 1px solid hsl(var(--border) / 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  scrollbar-width: none;
+}
+
+.ui-chrona-v3 .v3-nav-pill-track::-webkit-scrollbar {
+  display: none;
+}
+
+.ui-chrona-v3 .v3-nav-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  min-height: 2.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+.ui-chrona-v3 .v3-nav-pill:hover {
+  color: hsl(347 80% 76%);
+  background: hsl(347 89% 62% / 0.08);
+}
+
+.ui-chrona-v3 .v3-nav-pill:focus-visible {
+  outline: 2px solid hsl(347 89% 62%);
+  outline-offset: 1px;
+}
+
+.ui-chrona-v3 .v3-nav-pill-active {
+  color: hsl(347 90% 78%);
+}
+
+/* ─── Icon buttons ─────────────────────────────────────── */
+.ui-chrona-v3 .v3-icon-btn {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+  border: 1px solid transparent;
+}
+
+.ui-chrona-v3 .v3-icon-btn:hover {
+  color: hsl(347 80% 76%);
+  background: hsl(347 89% 62% / 0.09);
+  border-color: hsl(347 89% 62% / 0.2);
+}
+
+.ui-chrona-v3 .v3-icon-btn:focus-visible {
+  outline: 2px solid hsl(347 89% 62%);
+  outline-offset: 1px;
+}
+
+.ui-chrona-v3 .v3-icon-btn-active {
+  color: hsl(347 90% 78%);
+  background: hsl(347 89% 62% / 0.15);
+  border-color: hsl(347 89% 62% / 0.35);
+  box-shadow: 0 0 14px hsl(347 89% 62% / 0.15);
+}
+
+/* ─── Frosted glass panel (DM drawer) ──────────────────── */
+.ui-chrona-v3 .v3-glass-panel {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  border-left: 1px solid hsl(var(--border) / 0.6);
+  box-shadow: -12px 0 40px hsl(0 0% 0% / 0.18);
+}
+
+/* ─── Persona component overrides (rose identity) ──────── */
+.ui-chrona-v3 .persona-card {
+  background: linear-gradient(150deg, hsl(var(--card) / 0.95) 0%, hsl(345 25% 12% / 0.95) 100%);
+  border-radius: 1.125rem;
+}
+
+.ui-chrona-v3 .persona-card::before {
+  background: linear-gradient(90deg, transparent, hsl(347 89% 62% / 0.3), transparent);
+}
+
+.ui-chrona-v3 .persona-card-hover:hover {
+  border-color: hsl(347 89% 62% / 0.25);
+  box-shadow: 0 10px 34px hsl(0 0% 0% / 0.22), 0 0 26px hsl(347 89% 62% / 0.06);
+}
+
+.ui-chrona-v3 .persona-glass {
+  background: hsl(345 20% 9% / 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.ui-chrona-v3 .btn-persona {
+  background: linear-gradient(135deg, hsl(347 89% 60%) 0%, hsl(300 70% 58%) 100%);
+  border-radius: 0.875rem;
+}
+
+.ui-chrona-v3 .btn-persona:hover {
+  box-shadow: 0 8px 24px hsl(347 89% 60% / 0.28);
+}
+
+.ui-chrona-v3 .persona-gradient-text {
+  background: linear-gradient(135deg, hsl(347 89% 72%), hsl(320 80% 72%), hsl(292 80% 74%));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.ui-chrona-v3 .persona-nav-item::before {
+  background: linear-gradient(180deg, hsl(347 89% 62%), hsl(310 75% 60%));
+}
+
+.ui-chrona-v3 .persona-nav-item-active {
+  background: hsl(347 89% 62% / 0.12);
+  color: hsl(347 85% 78%);
+}
+
+.ui-chrona-v3 .persona-modal {
+  background: hsl(345 22% 10% / 0.93);
+  border-radius: 1.25rem;
+}
+
+.ui-chrona-v3 .persona-input {
+  border-radius: 0.875rem;
+}
+
+.ui-chrona-v3 .persona-input:focus {
+  border-color: hsl(347 89% 62% / 0.5);
+  box-shadow: 0 0 0 3px hsl(347 89% 62% / 0.14);
+}
+
+.ui-chrona-v3 .persona-pill {
+  border-radius: 0.75rem;
+}
+
+.ui-chrona-v3 .persona-pill-active {
+  background: linear-gradient(135deg, hsl(347 89% 60%) 0%, hsl(300 70% 58%) 100%);
+  color: white;
+}
+
+.ui-chrona-v3 .persona-tabs {
+  border-radius: 0.875rem;
+}
+
+.ui-chrona-v3 .persona-tab {
+  color: hsl(var(--muted-foreground));
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.ui-chrona-v3 .persona-tab:hover {
+  background: hsl(347 89% 62% / 0.08);
+  color: hsl(var(--foreground));
+}
+
+.ui-chrona-v3 .persona-tab-active {
+  background: linear-gradient(135deg, hsl(347 89% 60%) 0%, hsl(300 70% 58%) 100%);
+  color: white;
+  box-shadow: 0 2px 14px hsl(347 89% 60% / 0.3);
+}
+
+.ui-chrona-v3 .persona-badge-primary {
+  background: hsl(347 89% 62% / 0.13);
+  color: hsl(347 85% 75%);
+  border-color: hsl(347 89% 62% / 0.3);
+}
+
+.ui-chrona-v3 .persona-empty-state-icon {
+  background: hsl(347 89% 62% / 0.1);
+  color: hsl(347 85% 70%);
+}
+
+/* ─── Scrollbar (rose) ─────────────────────────────────── */
+.ui-chrona-v3 ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, hsl(347 60% 48%), hsl(320 55% 45%));
+}
+
+.ui-chrona-v3 ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, hsl(347 70% 58%), hsl(320 65% 55%));
+}
+
+.ui-chrona-v3 ::-webkit-scrollbar-track {
+  background: hsl(347 89% 62% / 0.04);
+}
+
+/* ─── Focus styles ─────────────────────────────────────── */
+.ui-chrona-v3 button:focus-visible,
+.ui-chrona-v3 a:focus-visible,
+.ui-chrona-v3 [role='button']:focus-visible {
+  outline: 2px solid hsl(347 89% 62%);
+  outline-offset: 2px;
+  border-radius: 0.875rem;
+}
+
+/* ─── Theme co-existence ───────────────────────────────── */
+.ui-chrona-v3.theme-midnight .persona-card {
+  background: linear-gradient(150deg, hsl(265 28% 9% / 0.95) 0%, hsl(280 24% 13% / 0.95) 100%);
+}
+
+.ui-chrona-v3.theme-forest .persona-card {
+  background: linear-gradient(150deg, hsl(150 22% 9% / 0.95) 0%, hsl(155 18% 12% / 0.95) 100%);
+}
+
+.ui-chrona-v3.theme-light .persona-card {
+  background: linear-gradient(150deg, hsl(0 0% 100% / 0.94) 0%, hsl(340 40% 97% / 0.94) 100%);
+}
+
+.ui-chrona-v3.theme-light .persona-glass {
+  background: hsl(340 50% 98% / 0.7);
+}
+
+.ui-chrona-v3.theme-light .v3-glass-panel {
+  box-shadow: -12px 0 36px hsl(340 30% 20% / 0.10);
+}
+
+/* ─── Reduced motion ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ui-chrona-v3 .v3-nav-pill,
+  .ui-chrona-v3 .v3-icon-btn {
+    transition: none;
+  }
+}

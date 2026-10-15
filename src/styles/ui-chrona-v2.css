@@ -1,0 +1,335 @@
+/* ========================================
+   Chrona V2 — "Aurora Dock"
+   Glassmorphic floating-dock layout.
+   Violet/fuchsia accents over theme-aware charcoal glass.
+   ======================================== */
+
+.ui-chrona-v2 {
+  --v2-accent: 268 83% 68%;        /* violet   */
+  --v2-accent-2: 292 80% 68%;      /* fuchsia  */
+  --v2-glow: 276 82% 60%;
+}
+
+/* ─── Ambient background ─────────────────────────────────
+   Layered radial auras behind everything. Uses theme vars
+   for the base wash so light/midnight/forest all work. */
+.ui-chrona-v2 .v2-ambient-bg {
+  background:
+    radial-gradient(ellipse 60% 45% at 12% -5%, hsl(268 83% 60% / 0.13) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at 95% 8%, hsl(292 80% 62% / 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 50% 115%, hsl(276 82% 60% / 0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 70% at 50% 50%, hsl(var(--background)) 0%, hsl(var(--background)) 100%);
+}
+
+/* ─── Top bar ──────────────────────────────────────────── */
+.ui-chrona-v2 .v2-topbar {
+  background: hsl(var(--background) / 0.72);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid hsl(var(--border) / 0.7);
+}
+
+/* Small square icon chip (panel toggles) */
+.ui-chrona-v2 .v2-chip-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+}
+
+.ui-chrona-v2 .v2-chip-btn:hover {
+  color: hsl(268 83% 78%);
+  background: hsl(268 83% 68% / 0.10);
+  border-color: hsl(268 83% 68% / 0.20);
+}
+
+.ui-chrona-v2 .v2-chip-btn:focus-visible {
+  outline: 2px solid hsl(268 83% 68%);
+  outline-offset: 1px;
+}
+
+.ui-chrona-v2 .v2-chip-btn-active {
+  color: hsl(268 90% 80%);
+  background: hsl(268 83% 68% / 0.16);
+  border-color: hsl(268 83% 68% / 0.35);
+  box-shadow: 0 0 12px hsl(268 83% 68% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.06);
+}
+
+/* Search / command trigger pill */
+.ui-chrona-v2 .v2-search-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.25rem;
+  width: 100%;
+  max-width: 22rem;
+  padding: 0 0.875rem;
+  border-radius: 9999px;
+  background: hsl(var(--muted) / 0.45);
+  border: 1px solid hsl(var(--border) / 0.8);
+  transition: all 0.2s ease;
+}
+
+.ui-chrona-v2 .v2-search-trigger:hover {
+  border-color: hsl(268 83% 68% / 0.45);
+  background: hsl(268 83% 68% / 0.07);
+  box-shadow: 0 0 0 4px hsl(268 83% 68% / 0.08);
+}
+
+.ui-chrona-v2 .v2-search-trigger:focus-visible {
+  outline: 2px solid hsl(268 83% 68%);
+  outline-offset: 1px;
+}
+
+/* ─── Frosted glass panels (sidebars) ──────────────────── */
+.ui-chrona-v2 .v2-glass-panel {
+  background: hsl(var(--card) / 0.55);
+  backdrop-filter: blur(22px) saturate(1.3);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  border: 1px solid hsl(var(--border) / 0.7);
+  box-shadow:
+    0 12px 40px hsl(0 0% 0% / 0.22),
+    inset 0 1px 0 hsl(0 0% 100% / 0.05);
+}
+
+/* ─── Floating dock ────────────────────────────────────── */
+.ui-chrona-v2 .v2-dock {
+  background: hsl(var(--popover) / 0.82);
+  backdrop-filter: blur(26px) saturate(1.5);
+  -webkit-backdrop-filter: blur(26px) saturate(1.5);
+  border: 1px solid hsl(268 60% 60% / 0.22);
+  border-radius: 1.375rem;
+  box-shadow:
+    0 16px 44px hsl(0 0% 0% / 0.38),
+    0 0 32px hsl(276 82% 60% / 0.14),
+    inset 0 1px 0 hsl(0 0% 100% / 0.07);
+}
+
+.ui-chrona-v2 .v2-dock-item {
+  position: relative;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.18s ease, background-color 0.18s ease;
+  flex-shrink: 0;
+}
+
+.ui-chrona-v2 .v2-dock-item:hover {
+  color: hsl(268 83% 78%);
+  background: hsl(268 83% 68% / 0.10);
+}
+
+.ui-chrona-v2 .v2-dock-item:focus-visible {
+  outline: 2px solid hsl(268 83% 68%);
+  outline-offset: 1px;
+}
+
+.ui-chrona-v2 .v2-dock-item-active {
+  color: hsl(268 90% 82%);
+}
+
+/* Dock scrollbar: nearly invisible until hovered */
+.ui-chrona-v2 .v2-dock::-webkit-scrollbar {
+  height: 4px;
+}
+
+.ui-chrona-v2 .v2-dock::-webkit-scrollbar-thumb {
+  background: hsl(268 83% 68% / 0.2);
+  border-radius: 4px;
+}
+
+/* ─── Command palette ──────────────────────────────────── */
+.ui-chrona-v2 .v2-command-palette {
+  background: hsl(var(--popover) / 0.92);
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  border: 1px solid hsl(268 60% 60% / 0.25);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 28px 64px hsl(0 0% 0% / 0.45),
+    0 0 40px hsl(276 82% 60% / 0.12),
+    inset 0 1px 0 hsl(0 0% 100% / 0.06);
+}
+
+/* ─── Persona component overrides (violet identity) ────── */
+.ui-chrona-v2 .persona-card {
+  background: linear-gradient(135deg, hsl(var(--card) / 0.92) 0%, hsl(272 24% 11% / 0.92) 100%);
+  border-radius: 1rem;
+}
+
+.ui-chrona-v2 .persona-card::before {
+  background: linear-gradient(90deg, transparent, hsl(268 83% 68% / 0.35), transparent);
+}
+
+.ui-chrona-v2 .persona-card-hover:hover {
+  border-color: hsl(268 83% 68% / 0.3);
+  box-shadow: 0 8px 28px hsl(0 0% 0% / 0.3), 0 0 22px hsl(268 83% 68% / 0.08);
+}
+
+.ui-chrona-v2 .persona-glass {
+  background: hsl(270 20% 9% / 0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.ui-chrona-v2 .btn-persona {
+  background: linear-gradient(135deg, hsl(268 83% 62%) 0%, hsl(292 78% 60%) 100%);
+  border-radius: 0.75rem;
+}
+
+.ui-chrona-v2 .btn-persona:hover {
+  box-shadow: 0 8px 24px hsl(268 83% 62% / 0.3);
+}
+
+.ui-chrona-v2 .persona-gradient-text {
+  background: linear-gradient(135deg, hsl(268 83% 74%), hsl(282 80% 70%), hsl(292 80% 74%));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.ui-chrona-v2 .persona-nav-item::before {
+  background: linear-gradient(180deg, hsl(268 83% 68%), hsl(292 80% 62%));
+}
+
+.ui-chrona-v2 .persona-nav-item-active {
+  background: hsl(268 83% 68% / 0.13);
+  color: hsl(268 85% 80%);
+}
+
+.ui-chrona-v2 .persona-nav-item-active::before {
+  background: linear-gradient(180deg, hsl(268 83% 68%), hsl(292 80% 62%));
+}
+
+.ui-chrona-v2 .persona-modal {
+  background: hsl(270 22% 9% / 0.92);
+  border-radius: 1.125rem;
+}
+
+.ui-chrona-v2 .persona-input {
+  border-radius: 0.75rem;
+}
+
+.ui-chrona-v2 .persona-input:focus {
+  border-color: hsl(268 83% 68% / 0.5);
+  box-shadow: 0 0 0 3px hsl(268 83% 68% / 0.15);
+}
+
+.ui-chrona-v2 .persona-pill {
+  border-radius: 0.625rem;
+}
+
+.ui-chrona-v2 .persona-pill-active {
+  background: linear-gradient(135deg, hsl(268 83% 62%) 0%, hsl(292 78% 60%) 100%);
+  color: white;
+}
+
+.ui-chrona-v2 .persona-tabs {
+  border-radius: 0.75rem;
+}
+
+.ui-chrona-v2 .persona-tab {
+  color: hsl(var(--muted-foreground));
+  border-radius: 0.625rem;
+  transition: all 0.2s ease;
+}
+
+.ui-chrona-v2 .persona-tab:hover {
+  background: hsl(268 83% 68% / 0.1);
+  color: hsl(var(--foreground));
+}
+
+.ui-chrona-v2 .persona-tab-active {
+  background: linear-gradient(135deg, hsl(268 83% 62%) 0%, hsl(292 78% 60%) 100%);
+  color: white;
+  box-shadow: 0 2px 14px hsl(268 83% 62% / 0.35);
+}
+
+.ui-chrona-v2 .persona-badge-primary {
+  background: hsl(268 83% 68% / 0.14);
+  color: hsl(268 85% 78%);
+  border-color: hsl(268 83% 68% / 0.3);
+}
+
+.ui-chrona-v2 .persona-empty-state-icon {
+  background: hsl(268 83% 68% / 0.1);
+  color: hsl(268 83% 74%);
+}
+
+/* ─── Scrollbar (violet) ───────────────────────────────── */
+.ui-chrona-v2 ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, hsl(268 60% 48%), hsl(282 55% 42%));
+}
+
+.ui-chrona-v2 ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, hsl(268 70% 58%), hsl(292 65% 52%));
+}
+
+.ui-chrona-v2 ::-webkit-scrollbar-track {
+  background: hsl(268 83% 68% / 0.04);
+}
+
+/* ─── Focus styles ─────────────────────────────────────── */
+.ui-chrona-v2 button:focus-visible,
+.ui-chrona-v2 a:focus-visible,
+.ui-chrona-v2 [role='button']:focus-visible {
+  outline: 2px solid hsl(268 83% 68%);
+  outline-offset: 2px;
+  border-radius: 0.75rem;
+}
+
+/* ─── Theme co-existence ───────────────────────────────── */
+/* Keep each theme's own card tone under the violet wash */
+.ui-chrona-v2.theme-midnight .persona-card {
+  background: linear-gradient(135deg, hsl(265 28% 9% / 0.95) 0%, hsl(272 24% 13% / 0.95) 100%);
+}
+
+.ui-chrona-v2.theme-forest .persona-card {
+  background: linear-gradient(135deg, hsl(150 22% 9% / 0.95) 0%, hsl(155 18% 12% / 0.95) 100%);
+}
+
+.ui-chrona-v2.theme-light .persona-card {
+  background: linear-gradient(135deg, hsl(0 0% 100% / 0.94) 0%, hsl(280 30% 96% / 0.94) 100%);
+}
+
+.ui-chrona-v2.theme-light .persona-glass {
+  background: hsl(280 40% 98% / 0.7);
+}
+
+.ui-chrona-v2.theme-light .v2-dock {
+  box-shadow:
+    0 16px 44px hsl(270 30% 20% / 0.18),
+    0 0 32px hsl(276 82% 60% / 0.10),
+    inset 0 1px 0 hsl(0 0% 100% / 0.8);
+}
+
+.ui-chrona-v2.theme-light .v2-glass-panel {
+  box-shadow:
+    0 12px 36px hsl(270 30% 20% / 0.12),
+    inset 0 1px 0 hsl(0 0% 100% / 0.9);
+}
+
+.ui-chrona-v2.theme-light .v2-command-palette {
+  box-shadow:
+    0 28px 64px hsl(270 30% 20% / 0.22),
+    0 0 40px hsl(276 82% 60% / 0.08),
+    inset 0 1px 0 hsl(0 0% 100% / 0.9);
+}
+
+/* ─── Reduced motion ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ui-chrona-v2 .v2-dock-item,
+  .ui-chrona-v2 .v2-chip-btn,
+  .ui-chrona-v2 .v2-search-trigger {
+    transition: none;
+  }
+}
